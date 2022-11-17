@@ -14,6 +14,8 @@ To be added.
 
 We use `Create2Deployer` to make sure the "to be deployed" contract addresses is predictable and so we could replay a tx on different chains and get same addresses on them. If you have some custom logics, it's totally **optional**.
 
+Use `npx hardhat run --network localhost ./scripts/[script-name].ts` to run scripts below. If you don't specify network, it will run on Ethereum. For more infos please go to [hardhat site](https://hardhat.org/hardhat-runner/docs/getting-started).
+
 ### Full-automatic on-chain deployment
 
 The `Full-automatic on-chain deployment` is a more appropriate approach for creators whom cannot write code. Contracts containing the same implementation code on different chains should be deployed only once. 
