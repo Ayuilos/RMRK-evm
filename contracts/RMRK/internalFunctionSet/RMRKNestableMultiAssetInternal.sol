@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/ILightmEquippable.sol";
 import "../library/ValidatorLib.sol";
-import "./RMRKNestingInternal.sol";
-import "./RMRKMultiResourceInternal.sol";
+import "./RMRKNestableInternal.sol";
+import "./RMRKMultiAssetInternal.sol";
 
-abstract contract RMRKNestingMultiResourceInternal is
-    RMRKNestingInternal,
-    RMRKMultiResourceInternal
+abstract contract RMRKNestableMultiAssetInternal is
+    RMRKNestableInternal,
+    RMRKMultiAssetInternal
 {
     using RMRKLib for uint64[];
 
@@ -18,28 +18,28 @@ abstract contract RMRKNestingMultiResourceInternal is
         internal
         view
         virtual
-        override(ERC721Internal, RMRKNestingInternal)
+        override(ERC721Internal, RMRKNestableInternal)
         returns (bool)
     {
-        return RMRKNestingInternal._exists(tokenId);
+        return RMRKNestableInternal._exists(tokenId);
     }
 
     function _ownerOf(uint256 tokenId)
         internal
         view
         virtual
-        override(ERC721Internal, RMRKNestingInternal)
+        override(ERC721Internal, RMRKNestableInternal)
         returns (address)
     {
-        return RMRKNestingInternal._ownerOf(tokenId);
+        return RMRKNestableInternal._ownerOf(tokenId);
     }
 
     function _burn(uint256 tokenId)
         internal
         virtual
-        override(ERC721Internal, RMRKMultiResourceInternal)
+        override(ERC721Internal, RMRKMultiAssetInternal)
     {
-        RMRKMultiResourceInternal._burn(tokenId);
+        RMRKMultiAssetInternal._burn(tokenId);
     }
 
     function _burn(uint256 tokenId, uint256 maxChildrenBurns)
@@ -48,7 +48,7 @@ abstract contract RMRKNestingMultiResourceInternal is
         override
         returns (uint256)
     {
-        (address immediateOwner, uint256 parentId, ) = _rmrkOwnerOf(tokenId);
+        (address immediateOwner, uint256 parentId, ) = _directOwnerOf(tokenId);
         address owner = _ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
@@ -66,10 +66,10 @@ abstract contract RMRKNestingMultiResourceInternal is
             delete s._tokenApprovals[tokenId];
         }
         _approve(address(0), tokenId);
-        _approveForResources(address(0), tokenId);
+        _approveForAssets(address(0), tokenId);
         _cleanApprovals(tokenId);
 
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
         Child[] memory children = ns._activeChildren[tokenId];
 
         delete ns._activeChildren[tokenId];
@@ -98,7 +98,7 @@ abstract contract RMRKNestingMultiResourceInternal is
                 // We substract one to the next level to count for the token being burned, then add it again on returns
                 // This is to allow the behavior of 0 recursive burns meaning only the current token is deleted.
                 totalChildBurns +=
-                    IRMRKNesting(children[i].contractAddress).burn(
+                    IRMRKNestable(children[i].contractAddress).burn(
                         children[i].tokenId,
                         pendingRecursiveBurns - 1
                     ) +
@@ -128,26 +128,26 @@ abstract contract RMRKNestingMultiResourceInternal is
     function _mint(address to, uint256 tokenId)
         internal
         virtual
-        override(ERC721Internal, RMRKNestingInternal)
+        override(ERC721Internal, RMRKNestableInternal)
     {
-        RMRKNestingInternal._mint(to, tokenId);
+        RMRKNestableInternal._mint(to, tokenId);
     }
 
     function _transfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override(ERC721Internal, RMRKNestingInternal) {
-        RMRKNestingInternal._transfer(from, to, tokenId);
+    ) internal virtual override(ERC721Internal, RMRKNestableInternal) {
+        RMRKNestableInternal._transfer(from, to, tokenId);
     }
 
     function _tokenURI(uint256 tokenId)
         internal
         view
         virtual
-        override(ERC721Internal, RMRKMultiResourceInternal)
+        override(ERC721Internal, RMRKMultiAssetInternal)
         returns (string memory)
     {
-        return RMRKMultiResourceInternal._tokenURI(tokenId);
+        return RMRKMultiAssetInternal._tokenURI(tokenId);
     }
 }

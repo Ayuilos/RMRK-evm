@@ -33,26 +33,26 @@ contract LightmImpl is
         _setFallbackURI(fallbackURI);
     }
 
-    function addBaseRelatedResourceEntry(
+    function addBaseRelatedAssetEntry(
         uint64 id,
-        BaseRelatedData calldata baseRelatedResourceData,
+        BaseRelatedData calldata baseRelatedAssetData,
         string memory metadataURI
     ) external onlyOwner {
-        _addBaseRelatedResourceEntry(id, baseRelatedResourceData, metadataURI);
+        _addBaseRelatedAssetEntry(id, baseRelatedAssetData, metadataURI);
     }
 
-    function addResourceEntry(uint64 id, string memory metadataURI)
+    function addAssetEntry(uint64 id, string memory metadataURI)
         external
         onlyOwner
     {
-        _addResourceEntry(id, metadataURI);
+        _addAssetEntry(id, metadataURI);
     }
 
-    function addResourceToToken(
+    function addAssetToToken(
         uint256 tokenId,
-        uint64 resourceId,
+        uint64 assetId,
         uint64 overwrites
-    ) external onlyApprovedForResourcesOrOwner(tokenId) {
-        _addResourceToToken(tokenId, resourceId, overwrites);
+    ) external onlyApprovedForAssetsOrOwner(tokenId) {
+        _addAssetToToken(tokenId, assetId, overwrites);
     }
 }

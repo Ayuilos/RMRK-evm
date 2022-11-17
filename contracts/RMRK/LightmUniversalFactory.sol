@@ -5,12 +5,12 @@ pragma solidity ^0.8.15;
 import "./Diamond.sol";
 import "./DiamondCutFacet.sol";
 import "./DiamondLoupeFacet.sol";
-import "./LightmEquippableNestingFacet.sol";
-import "./LightmEquippableMultiResourceFacet.sol";
+import "./LightmEquippableNestableFacet.sol";
+import "./LightmEquippableMultiAssetFacet.sol";
 import "./LightmEquippableFacet.sol";
 import "./RMRKCollectionMetadataFacet.sol";
 import "./library/ValidatorLib.sol";
-import "./library/RMRKMultiResourceRenderUtils.sol";
+import "./library/RMRKMultiAssetRenderUtils.sol";
 
 import {LightmInit} from "./LightmInit.sol";
 import {LightmImpl} from "../implementations/LightmImplementer.sol";
@@ -23,11 +23,11 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
     string private constant VERSION = "0.1.0-alpha";
 
     address private immutable _validatorLibAddress;
-    address private immutable _mrRenderUtilsAddress;
+    address private immutable _maRenderUtilsAddress;
     address private immutable _diamondCutFacetAddress;
     address private immutable _diamondLoupeFacetAddress;
-    address private immutable _nestingFacetAddress;
-    address private immutable _multiResourceFacetAddress;
+    address private immutable _nestableFacetAddress;
+    address private immutable _multiAssetFacetAddress;
     address private immutable _equippableFacetAddress;
     address private immutable _collectionMetadataFacetAddress;
     address private immutable _initContractAddress;
@@ -37,11 +37,11 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     constructor(ConstructParams memory params) {
         _validatorLibAddress = params.validatorLibAddress;
-        _mrRenderUtilsAddress = params.mrRenderUtilsAddress;
+        _maRenderUtilsAddress = params.maRenderUtilsAddress;
         _diamondCutFacetAddress = params.diamondCutFacetAddress;
         _diamondLoupeFacetAddress = params.diamondLoupeFacetAddress;
-        _nestingFacetAddress = params.nestingFacetAddress;
-        _multiResourceFacetAddress = params.multiResourceFacetAddress;
+        _nestableFacetAddress = params.nestableFacetAddress;
+        _multiAssetFacetAddress = params.multiAssetFacetAddress;
         _equippableFacetAddress = params.equippableFacetAddress;
         _collectionMetadataFacetAddress = params.collectionMetadataFacetAddress;
         _initContractAddress = params.initContractAddress;
@@ -70,16 +70,16 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         return _validatorLibAddress;
     }
 
-    function mrRenderUtilsAddress() external view returns (address) {
-        return _mrRenderUtilsAddress;
+    function maRenderUtilsAddress() external view returns (address) {
+        return _maRenderUtilsAddress;
     }
 
-    function nestingFacetAddress() external view returns (address) {
-        return _nestingFacetAddress;
+    function nestableFacetAddress() external view returns (address) {
+        return _nestableFacetAddress;
     }
 
-    function multiResourceFacetAddress() external view returns (address) {
-        return _multiResourceFacetAddress;
+    function multiAssetFacetAddress() external view returns (address) {
+        return _multiAssetFacetAddress;
     }
 
     function equippableFacetAddress() external view returns (address) {

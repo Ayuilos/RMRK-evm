@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-interface IRMRKNestingEventsAndStruct {
+interface IRMRKNestableEventsAndStruct {
     struct RMRKOwner {
         uint256 tokenId;
         address ownerAddress;
@@ -67,7 +67,7 @@ interface IRMRKNestingEventsAndStruct {
     );
 }
 
-interface IRMRKNesting is IRMRKNestingEventsAndStruct, IERC165 {
+interface IRMRKNestable is IRMRKNestableEventsAndStruct, IERC165 {
     /**
      * @dev Returns the 'root' owner of an NFT. If this is a child of another NFT, this will return an EOA
      * address. Otherwise, it will return the immediate owner.
@@ -79,7 +79,7 @@ interface IRMRKNesting is IRMRKNestingEventsAndStruct, IERC165 {
      * @dev Returns the immediate owner of an NFT -- if the owner is another RMRK NFT, the uint256 will reflect
      *
      */
-    function rmrkOwnerOf(uint256 tokenId)
+    function directOwnerOf(uint256 tokenId)
         external
         view
         returns (
@@ -94,7 +94,7 @@ interface IRMRKNesting is IRMRKNestingEventsAndStruct, IERC165 {
         returns (uint256);
 
     /**
-     * @dev Function to be called into by other instances of RMRK nesting contracts to update the `child` struct
+     * @dev Function to be called into by other instances of RMRK nestable contracts to update the `child` struct
      * of the parent.
      *
      * Requirements:

@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.15;
 
-import {IRMRKNesting} from "./IRMRKNesting.sol";
+import {IRMRKNestable} from "./IRMRKNestable.sol";
 
-interface ILightmNesting is IRMRKNesting {
+interface ILightmNestable is IRMRKNestable {
     function hasChild(
         uint256 tokenId,
         address childContract,

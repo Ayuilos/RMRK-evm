@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.15;
 
-import "./RMRKNestingFacet.sol";
+import "./RMRKNestableFacet.sol";
 import "./internalFunctionSet/LightmEquippableInternal.sol";
 
-contract LightmEquippableNestingFacet is
-    RMRKNestingFacet,
+contract LightmEquippableNestableFacet is
+    RMRKNestableFacet,
     LightmEquippableInternal
 {
     constructor(string memory name_, string memory symbol_)
-        RMRKNestingFacet(name_, symbol_)
+        RMRKNestableFacet(name_, symbol_)
     {}
 
     // No need to override `supportsInterface` here,
@@ -37,9 +37,9 @@ contract LightmEquippableNestingFacet is
         address childAddress,
         uint256 childTokenId
     ) public onlyApprovedOrOwner(tokenId) {
-        (address owner, uint256 ownerTokenId, bool isNft) = IRMRKNesting(
+        (address owner, uint256 ownerTokenId, bool isNft) = IRMRKNestable(
             childAddress
-        ).rmrkOwnerOf(childTokenId);
+        ).directOwnerOf(childTokenId);
 
         (bool inChildrenOrPending, , ) = _hasChild(
             tokenId,
@@ -71,14 +71,14 @@ contract LightmEquippableNestingFacet is
 
     function _burn(uint256 tokenId)
         internal
-        override(ERC721Internal, RMRKNestingMultiResourceInternal)
+        override(ERC721Internal, RMRKNestableMultiAssetInternal)
     {
-        RMRKNestingMultiResourceInternal._burn(tokenId);
+        RMRKNestableMultiAssetInternal._burn(tokenId);
     }
 
     function _burn(uint256 tokenId, uint256 maxChildrenBurns)
         internal
-        override(RMRKNestingInternal, LightmEquippableInternal)
+        override(RMRKNestableInternal, LightmEquippableInternal)
         returns (uint256)
     {
         return LightmEquippableInternal._burn(tokenId, maxChildrenBurns);
@@ -87,43 +87,43 @@ contract LightmEquippableNestingFacet is
     function _exists(uint256 tokenId)
         internal
         view
-        override(RMRKNestingInternal, RMRKNestingMultiResourceInternal)
+        override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
         returns (bool)
     {
-        return RMRKNestingMultiResourceInternal._exists(tokenId);
+        return RMRKNestableMultiAssetInternal._exists(tokenId);
     }
 
     function _mint(address to, uint256 tokenId)
         internal
-        override(RMRKNestingInternal, RMRKNestingMultiResourceInternal)
+        override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
     {
-        RMRKNestingMultiResourceInternal._mint(to, tokenId);
+        RMRKNestableMultiAssetInternal._mint(to, tokenId);
     }
 
     function _ownerOf(uint256 tokenId)
         internal
         view
-        override(RMRKNestingInternal, RMRKNestingMultiResourceInternal)
+        override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
         returns (address)
     {
-        return RMRKNestingMultiResourceInternal._ownerOf(tokenId);
+        return RMRKNestableMultiAssetInternal._ownerOf(tokenId);
     }
 
     function _tokenURI(uint256 tokenId)
         internal
         view
-        override(ERC721Internal, RMRKNestingMultiResourceInternal)
+        override(ERC721Internal, RMRKNestableMultiAssetInternal)
         returns (string memory)
     {
-        return RMRKNestingMultiResourceInternal._tokenURI(tokenId);
+        return RMRKNestableMultiAssetInternal._tokenURI(tokenId);
     }
 
     function _transfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal override(RMRKNestingInternal, RMRKNestingMultiResourceInternal) {
-        RMRKNestingMultiResourceInternal._transfer(from, to, tokenId);
+    ) internal override(RMRKNestableInternal, RMRKNestableMultiAssetInternal) {
+        RMRKNestableMultiAssetInternal._transfer(from, to, tokenId);
     }
 
     function _unnestChild(
@@ -132,7 +132,7 @@ contract LightmEquippableNestingFacet is
         address childContractAddress,
         uint256 childTokenId,
         bool isPending
-    ) internal override(RMRKNestingInternal, LightmEquippableInternal) {
+    ) internal override(RMRKNestableInternal, LightmEquippableInternal) {
         LightmEquippableInternal._unnestChild(
             tokenId,
             to,

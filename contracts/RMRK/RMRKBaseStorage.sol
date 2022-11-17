@@ -37,7 +37,7 @@ contract RMRKBaseStorage is IRMRKBaseStorage, ERC165 {
     */
 
 
-    //uint64 is sort of arbitrary here--resource IDs in RMRK substrate are uint64 for reference
+    //uint64 is sort of arbitrary here--asset IDs in RMRK substrate are uint64 for reference
     mapping(uint64 => Part) private _parts;
     mapping(uint64 => bool) private _isEquippableToAll;
 

@@ -20,7 +20,7 @@ export default async function deployUniversalFactory(
 
   const constructorParams = ethers.utils.defaultAbiCoder.encode(
     [
-      'tuple(address validatorLibAddress,address mrRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestingFacetAddress,address multiResourceFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
+      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
     ],
     [constructParams],
   );
@@ -70,11 +70,11 @@ async function deploy() {
 
   const factoryAddress = await deployUniversalFactory(create2DeployerAddress, {
     validatorLibAddress: rest.lightmValidatorLibAddress,
-    mrRenderUtilsAddress: rest.rmrkMultiResourceRenderUtilsAddress,
+    maRenderUtilsAddress: rest.rmrkMultiAssetRenderUtilsAddress,
     diamondCutFacetAddress: rest.diamondCutFacetAddress,
     diamondLoupeFacetAddress: cut[0].facetAddress,
-    multiResourceFacetAddress: cut[1].facetAddress,
-    nestingFacetAddress: cut[2].facetAddress,
+    multiAssetFacetAddress: cut[1].facetAddress,
+    nestableFacetAddress: cut[2].facetAddress,
     equippableFacetAddress: cut[3].facetAddress,
     implContractAddress: cut[4].facetAddress,
     collectionMetadataFacetAddress: cut[5].facetAddress,

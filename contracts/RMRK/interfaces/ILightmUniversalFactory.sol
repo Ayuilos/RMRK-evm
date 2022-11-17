@@ -8,11 +8,11 @@ import {IDiamondCut} from "./IDiamondCut.sol";
 interface ILightmUniversalFactory {
     struct ConstructParams {
         address validatorLibAddress;
-        address mrRenderUtilsAddress;
+        address maRenderUtilsAddress;
         address diamondCutFacetAddress;
         address diamondLoupeFacetAddress;
-        address nestingFacetAddress;
-        address multiResourceFacetAddress;
+        address nestableFacetAddress;
+        address multiAssetFacetAddress;
         address equippableFacetAddress;
         address collectionMetadataFacetAddress;
         address initContractAddress;
@@ -30,11 +30,11 @@ interface ILightmUniversalFactory {
 
     function validatorLibAddress() external view returns (address);
 
-    function mrRenderUtilsAddress() external view returns (address);
+    function maRenderUtilsAddress() external view returns (address);
 
-    function nestingFacetAddress() external view returns (address);
+    function nestableFacetAddress() external view returns (address);
 
-    function multiResourceFacetAddress() external view returns (address);
+    function multiAssetFacetAddress() external view returns (address);
 
     function equippableFacetAddress() external view returns (address);
 

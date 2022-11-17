@@ -8,29 +8,29 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./interfaces/IERC721Metadata.sol";
 
-import "./internalFunctionSet/RMRKMultiResourceInternal.sol";
-import "./interfaces/IRMRKMultiResource.sol";
+import "./internalFunctionSet/RMRKMultiAssetInternal.sol";
+import "./interfaces/IRMRKMultiAsset.sol";
 import "./library/RMRKLib.sol";
-import "./library/RMRKMultiResourceRenderUtils.sol";
+import "./library/RMRKMultiAssetRenderUtils.sol";
 
 // !!!
 // Before use, make sure you know the description below
 // !!!
 /**
-    @dev NOTE that MultiResource take NFT as a real unique item on-chain,
+    @dev NOTE that MultiAsset take NFT as a real unique item on-chain,
     so if you `burn` a NFT, it means that you NEVER wanna `mint` it again,
     if you do so, you are trying to raising the soul of a dead man
-    (the `activeResources` etc. of this burned token will not be removed when `burn`),
+    (the `activeAssets` etc. of this burned token will not be removed when `burn`),
     instead of creating a new life by using a empty shell.
     You are responsible for any unknown consequences of this action, so take care of
     `mint` logic in your own implementer.
  */
 
-contract RMRKMultiResourceFacet is
+contract RMRKMultiAssetFacet is
     IERC721,
     IERC721Metadata,
-    IRMRKMultiResource,
-    RMRKMultiResourceInternal
+    IRMRKMultiAsset,
+    RMRKMultiAssetInternal
 {
     using RMRKLib for uint256;
     using RMRKLib for uint64[];
@@ -54,7 +54,7 @@ contract RMRKMultiResourceFacet is
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IRMRKMultiResource).interfaceId;
+            interfaceId == type(IRMRKMultiAsset).interfaceId;
     }
 
     // ------------------------ Metadata ------------------------
@@ -197,120 +197,120 @@ contract RMRKMultiResourceFacet is
 
     // ------------------------ RESOURCES ------------------------
 
-    function acceptResource(uint256 tokenId, uint64 resourceId)
+    function acceptAsset(uint256 tokenId, uint64 assetId)
         external
         virtual
-        onlyApprovedForResourcesOrOwner(tokenId)
+        onlyApprovedForAssetsOrOwner(tokenId)
     {
-        _acceptResource(tokenId, resourceId);
+        _acceptAsset(tokenId, assetId);
     }
 
-    function rejectResource(uint256 tokenId, uint64 resourceId)
+    function rejectAsset(uint256 tokenId, uint64 assetId)
         external
         virtual
-        onlyApprovedForResourcesOrOwner(tokenId)
+        onlyApprovedForAssetsOrOwner(tokenId)
     {
-        _rejectResource(tokenId, resourceId);
+        _rejectAsset(tokenId, assetId);
     }
 
-    function rejectAllResources(uint256 tokenId)
+    function rejectAllAssets(uint256 tokenId)
         external
         virtual
-        onlyApprovedForResourcesOrOwner(tokenId)
+        onlyApprovedForAssetsOrOwner(tokenId)
     {
-        _rejectAllResources(tokenId);
+        _rejectAllAssets(tokenId);
     }
 
     function setPriority(uint256 tokenId, uint16[] memory priorities)
         external
         virtual
-        onlyApprovedForResourcesOrOwner(tokenId)
+        onlyApprovedForAssetsOrOwner(tokenId)
     {
         _setPriority(tokenId, priorities);
     }
 
-    function approveForResources(address to, uint256 tokenId) external virtual {
+    function approveForAssets(address to, uint256 tokenId) external virtual {
         address owner = ownerOf(tokenId);
-        if (to == owner) revert RMRKApprovalForResourcesToCurrentOwner();
+        if (to == owner) revert RMRKApprovalForAssetsToCurrentOwner();
 
         if (
             _msgSender() != owner &&
-            !_isApprovedForAllForResources(owner, _msgSender())
-        ) revert RMRKApproveForResourcesCallerIsNotOwnerNorApprovedForAll();
+            !_isApprovedForAllForAssets(owner, _msgSender())
+        ) revert RMRKApproveForAssetsCallerIsNotOwnerNorApprovedForAll();
 
-        _approveForResources(to, tokenId);
+        _approveForAssets(to, tokenId);
     }
 
-    function setApprovalForAllForResources(address operator, bool approved)
+    function setApprovalForAllForAssets(address operator, bool approved)
         external
         virtual
     {
         address owner = _msgSender();
-        if (owner == operator) revert RMRKApproveForResourcesToCaller();
+        if (owner == operator) revert RMRKApproveForAssetsToCaller();
 
-        _setApprovalForAllForResources(owner, operator, approved);
+        _setApprovalForAllForAssets(owner, operator, approved);
     }
 
-    function getResourceMetadata(uint64 resourceId)
+    function getAssetMetadata(uint64 assetId)
         public
         view
         virtual
         returns (string memory)
     {
-        return _getResourceMetadata(resourceId);
+        return _getAssetMetadata(assetId);
     }
 
-    function getActiveResources(uint256 tokenId)
+    function getActiveAssets(uint256 tokenId)
         public
         view
         virtual
         returns (uint64[] memory)
     {
-        return _getActiveResources(tokenId);
+        return _getActiveAssets(tokenId);
     }
 
-    function getPendingResources(uint256 tokenId)
+    function getPendingAssets(uint256 tokenId)
         public
         view
         virtual
         returns (uint64[] memory)
     {
-        return _getPendingResources(tokenId);
+        return _getPendingAssets(tokenId);
     }
 
-    function getActiveResourcePriorities(uint256 tokenId)
+    function getActiveAssetPriorities(uint256 tokenId)
         public
         view
         virtual
         returns (uint16[] memory)
     {
-        return _getActiveResourcePriorities(tokenId);
+        return _getActiveAssetPriorities(tokenId);
     }
 
-    function getResourceOverwrites(uint256 tokenId, uint64 resourceId)
+    function getAssetOverwrites(uint256 tokenId, uint64 assetId)
         public
         view
         virtual
         returns (uint64)
     {
-        return _getResourceOverwrites(tokenId, resourceId);
+        return _getAssetOverwrites(tokenId, assetId);
     }
 
-    function getApprovedForResources(uint256 tokenId)
+    function getApprovedForAssets(uint256 tokenId)
         public
         view
         virtual
         returns (address)
     {
-        return _getApprovedForResources(tokenId);
+        return _getApprovedForAssets(tokenId);
     }
 
-    function isApprovedForAllForResources(address owner, address operator)
+    function isApprovedForAllForAssets(address owner, address operator)
         public
         view
         virtual
         returns (bool)
     {
-        return _isApprovedForAllForResources(owner, operator);
+        return _isApprovedForAllForAssets(owner, operator);
     }
 }

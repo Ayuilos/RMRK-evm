@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../interfaces/IRMRKNesting.sol";
+import "../interfaces/IRMRKNestable.sol";
 import "../interfaces/IRMRKBaseStorage.sol";
-import "../interfaces/IRMRKMultiResource.sol";
+import "../interfaces/IRMRKMultiAsset.sol";
 import "../interfaces/ILightmEquippable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -25,8 +25,8 @@ library LightmValidatorLib {
     }
 
     function _childIsIn(
-        IRMRKNesting.Child memory child,
-        IRMRKNesting.Child[] memory children
+        IRMRKNestable.Child memory child,
+        IRMRKNestable.Child[] memory children
     ) internal pure returns (bool) {
         uint256 len = children.length;
         for (uint256 i; i < len; ) {
@@ -68,21 +68,21 @@ library LightmValidatorLib {
     function getValidChildrenOf(address targetContract, uint256 tokenId)
         public
         view
-        returns (IRMRKNesting.Child[] memory validChildren)
+        returns (IRMRKNestable.Child[] memory validChildren)
     {
-        (bool isValid, string memory reason) = isAValidNestingContract(
+        (bool isValid, string memory reason) = isAValidNestableContract(
             targetContract
         );
 
         if (isValid) {
-            IRMRKNesting.Child[] memory children = IRMRKNesting(targetContract)
+            IRMRKNestable.Child[] memory children = IRMRKNestable(targetContract)
                 .childrenOf(tokenId);
             uint256 len = children.length;
             uint256 j;
 
             for (uint256 i; i < len; ) {
-                IRMRKNesting.Child memory child = children[i];
-                (bool childIsValid, ) = isAValidNestingContract(
+                IRMRKNestable.Child memory child = children[i];
+                (bool childIsValid, ) = isAValidNestableContract(
                     child.contractAddress
                 );
 
@@ -91,7 +91,7 @@ library LightmValidatorLib {
                         address ownerAddr,
                         uint256 ownerTokenId,
                         bool isNft
-                    ) = IRMRKNesting(child.contractAddress).rmrkOwnerOf(
+                    ) = IRMRKNestable(child.contractAddress).directOwnerOf(
                             child.tokenId
                         );
 
@@ -123,7 +123,7 @@ library LightmValidatorLib {
     function getValidSlotEquipments(
         address targetContract,
         uint256 tokenId,
-        uint64 baseRelatedResourceId
+        uint64 baseRelatedAssetId
     )
         public
         view
@@ -137,7 +137,7 @@ library LightmValidatorLib {
             (bool isValid, ) = isAValidBaseInstance(
                 targetContract,
                 tokenId,
-                baseRelatedResourceId
+                baseRelatedAssetId
             );
 
             if (!isValid) {
@@ -146,7 +146,7 @@ library LightmValidatorLib {
         }
 
         ILightmEquippable.SlotEquipment[] memory slotEquipments = tContract
-            .getSlotEquipments(tokenId, baseRelatedResourceId);
+            .getSlotEquipments(tokenId, baseRelatedAssetId);
 
         ILightmEquippable.SlotEquipment[]
             memory _validSlotEquipments = new ILightmEquippable.SlotEquipment[](
@@ -161,7 +161,7 @@ library LightmValidatorLib {
             (bool isValid, ) = isSlotEquipmentValid(
                 targetContract,
                 tokenId,
-                baseRelatedResourceId,
+                baseRelatedAssetId,
                 sE
             );
 
@@ -184,7 +184,7 @@ library LightmValidatorLib {
         return _validSlotEquipments;
     }
 
-    function isAValidNestingContract(address targetContract)
+    function isAValidNestableContract(address targetContract)
         public
         view
         returns (bool, string memory)
@@ -196,17 +196,17 @@ library LightmValidatorLib {
         if (
             !(
                 IERC165(targetContract).supportsInterface(
-                    type(IRMRKNesting).interfaceId
+                    type(IRMRKNestable).interfaceId
                 )
             )
         ) {
-            return (false, "RV:NotANesting");
+            return (false, "RV:NotANestable");
         }
 
         return (true, "");
     }
 
-    function isAValidMultiResourceContract(address targetContract)
+    function isAValidMultiAssetContract(address targetContract)
         public
         view
         returns (bool, string memory)
@@ -218,11 +218,11 @@ library LightmValidatorLib {
         if (
             !(
                 IERC165(targetContract).supportsInterface(
-                    type(IRMRKMultiResource).interfaceId
+                    type(IRMRKMultiAsset).interfaceId
                 )
             )
         ) {
-            return (false, "RV:NotAMultiResource");
+            return (false, "RV:NotAMultiAsset");
         }
 
         return (true, "");
@@ -264,10 +264,10 @@ library LightmValidatorLib {
                 type(ILightmEquippable).interfaceId
             ) &&
                 IERC165(targetContract).supportsInterface(
-                    type(IRMRKNesting).interfaceId
+                    type(IRMRKNestable).interfaceId
                 ) &&
                 IERC165(targetContract).supportsInterface(
-                    type(IRMRKMultiResource).interfaceId
+                    type(IRMRKMultiAsset).interfaceId
                 ))
         ) {
             return (false, "RV:NotAEquippable");
@@ -276,33 +276,33 @@ library LightmValidatorLib {
         return (true, "");
     }
 
-    // Make sure the `baseRelatedResource` is a Base instance
+    // Make sure the `baseRelatedAsset` is a Base instance
     // !!!
     // NOTE: This function assumed that `targetContract` was a valid Equippable contract
     // !!!
     function isAValidBaseInstance(
         address targetContract,
         uint256 tokenId,
-        uint64 baseRelatedResourceId
+        uint64 baseRelatedAssetId
     ) public view returns (bool, string memory) {
-        uint64[] memory activeResourceIds = IRMRKMultiResource(targetContract)
-            .getActiveResources(tokenId);
+        uint64[] memory activeAssetIds = IRMRKMultiAsset(targetContract)
+            .getActiveAssets(tokenId);
 
-        // `baseRelatedResourceId` has to be in `activeResourceIds`
-        if (!_existsInUint64Arr(baseRelatedResourceId, activeResourceIds)) {
-            return (false, "RV:NotInActiveResources");
+        // `baseRelatedAssetId` has to be in `activeAssetIds`
+        if (!_existsInUint64Arr(baseRelatedAssetId, activeAssetIds)) {
+            return (false, "RV:NotInActiveAssets");
         }
 
-        ILightmEquippable.BaseRelatedResource
-            memory baseRelatedResource = ILightmEquippable(targetContract)
-                .getBaseRelatedResource(baseRelatedResourceId);
+        ILightmEquippable.BaseRelatedAsset
+            memory baseRelatedAsset = ILightmEquippable(targetContract)
+                .getBaseRelatedAsset(baseRelatedAssetId);
 
-        address baseStorageContract = baseRelatedResource.baseAddress;
+        address baseStorageContract = baseRelatedAsset.baseAddress;
         (bool isBaseStorage, ) = isAValidBaseStorageContract(
             baseStorageContract
         );
 
-        // `baseRelatedResource` has to be a Base instance
+        // `baseRelatedAsset` has to be a Base instance
         if (!isBaseStorage) {
             return (false, "RV:NotValidBaseContract");
         }
@@ -311,11 +311,11 @@ library LightmValidatorLib {
     }
 
     // NOTE: This function has assumed that there are no problems
-    // with parent token and its `baseRelatedResource`
+    // with parent token and its `baseRelatedAsset`
     function isSlotEquipmentValid(
         address targetContract,
         uint256 tokenId,
-        uint64 baseRelatedResourceId,
+        uint64 baseRelatedAssetId,
         ILightmEquippable.SlotEquipment memory slotEquipment,
         bool checkExistingData
     ) public view returns (bool, string memory) {
@@ -329,9 +329,9 @@ library LightmValidatorLib {
                 return (false, "RV:TokenIdMisMatch");
             }
 
-            // The baseRelatedResourceId in `slotEquipment` has to equal `baseRelatedResourceId`
-            if (slotEquipment.baseRelatedResourceId != baseRelatedResourceId) {
-                return (false, "RV:BaseRelatedResourceIdMisMatch");
+            // The baseRelatedAssetId in `slotEquipment` has to equal `baseRelatedAssetId`
+            if (slotEquipment.baseRelatedAssetId != baseRelatedAssetId) {
+                return (false, "RV:BaseRelatedAssetIdMisMatch");
             }
 
             {
@@ -339,8 +339,8 @@ library LightmValidatorLib {
                     address ownerAddr,
                     uint256 ownerTokenId,
                     bool isNft
-                ) = IRMRKNesting(slotEquipment.child.contractAddress)
-                        .rmrkOwnerOf(slotEquipment.child.tokenId);
+                ) = IRMRKNestable(slotEquipment.child.contractAddress)
+                        .directOwnerOf(slotEquipment.child.tokenId);
 
                 // The child token's owner has to be this token
                 if (
@@ -354,7 +354,7 @@ library LightmValidatorLib {
 
             {
                 // The child token has to be this token's accepted child
-                IRMRKNesting.Child[] memory children = IRMRKNesting(
+                IRMRKNestable.Child[] memory children = IRMRKNestable(
                     targetContract
                 ).childrenOf(tokenId);
 
@@ -364,71 +364,71 @@ library LightmValidatorLib {
             }
 
             {
-                uint64 childBaseRelatedResourceId = slotEquipment
-                    .childBaseRelatedResourceId;
+                uint64 childBaseRelatedAssetId = slotEquipment
+                    .childBaseRelatedAssetId;
 
                 uint64[]
-                    memory childActiveBaseRelatedResourceIds = ILightmEquippable(
+                    memory childActiveBaseRelatedAssetIds = ILightmEquippable(
                         slotEquipment.child.contractAddress
-                    ).getActiveBaseRelatedResources(
+                    ).getActiveBaseRelatedAssets(
                             slotEquipment.child.tokenId
                         );
 
-                // The child token's `baseRelatedResourceId` has to be in child token's activeBaseRelatedResourceIds
+                // The child token's `baseRelatedAssetId` has to be in child token's activeBaseRelatedAssetIds
                 if (
                     !_existsInUint64Arr(
-                        childBaseRelatedResourceId,
-                        childActiveBaseRelatedResourceIds
+                        childBaseRelatedAssetId,
+                        childActiveBaseRelatedAssetIds
                     )
                 ) {
-                    return (false, "RV:NotInActiveResources");
+                    return (false, "RV:NotInActiveAssets");
                 }
             }
 
             {
-                ILightmEquippable.BaseRelatedResource
-                    memory baseRelatedResource = ILightmEquippable(targetContract)
-                        .getBaseRelatedResource(baseRelatedResourceId);
+                ILightmEquippable.BaseRelatedAsset
+                    memory baseRelatedAsset = ILightmEquippable(targetContract)
+                        .getBaseRelatedAsset(baseRelatedAssetId);
 
-                ILightmEquippable.BaseRelatedResource
-                    memory childBaseRelatedResource = ILightmEquippable(
+                ILightmEquippable.BaseRelatedAsset
+                    memory childBaseRelatedAsset = ILightmEquippable(
                         slotEquipment.child.contractAddress
-                    ).getBaseRelatedResource(
-                            slotEquipment.childBaseRelatedResourceId
+                    ).getBaseRelatedAsset(
+                            slotEquipment.childBaseRelatedAssetId
                         );
 
                 ILightmEquippable.SlotEquipment
                     memory realSlotEquipment = ILightmEquippable(targetContract)
                         .getSlotEquipment(
                             tokenId,
-                            baseRelatedResourceId,
-                            childBaseRelatedResource.targetSlotId
+                            baseRelatedAssetId,
+                            childBaseRelatedAsset.targetSlotId
                         );
 
-                // 1. The child's `targetBaseAddress` has to be `baseRelatedResource.baseAddress`
-                // 2. The child's `targetSlotId` has to be in `baseRelatedResource.partIds`,
+                // 1. The child's `targetBaseAddress` has to be `baseRelatedAsset.baseAddress`
+                // 2. The child's `targetSlotId` has to be in `baseRelatedAsset.partIds`,
                 // 3. This child collection should be allowed to be equipped on the `targetSlotId` by checking `baseStorageContract`
-                // 4?. The slot can only equip one resource -- NOTE:
+                // 4?. The slot can only equip one asset -- NOTE:
                 //     This check is controlled by `checkExistingData`, only be set to `true` when validate
                 //     the data which was already stored
                 if (
-                    childBaseRelatedResource.targetBaseAddress !=
-                    baseRelatedResource.baseAddress
+                    childBaseRelatedAsset.targetBaseAddress !=
+                    baseRelatedAsset.baseAddress
                 ) {
                     return (false, "RV:WrongTargetBaseAddress");
                 }
                 if (
                     !_existsInUint64Arr(
-                        childBaseRelatedResource.targetSlotId,
-                        baseRelatedResource.partIds
+                        childBaseRelatedAsset.targetSlotId,
+                        baseRelatedAsset.partIds
                     )
                 ) {
                     return (false, "RV:TargetSlotDidNotExist");
                 }
                 if (
-                    !IRMRKBaseStorage(baseRelatedResource.baseAddress)
+                    !IRMRKBaseStorage(baseRelatedAsset.baseAddress)
                         .checkIsEquippable(
-                            childBaseRelatedResource.targetSlotId,
+                            childBaseRelatedAsset.targetSlotId,
                             slotEquipment.child.contractAddress
                         )
                 ) {
@@ -438,8 +438,8 @@ library LightmValidatorLib {
                 if (
                     checkExistingData &&
                     (realSlotEquipment.slotId != slotEquipment.slotId ||
-                        realSlotEquipment.childBaseRelatedResourceId !=
-                        slotEquipment.childBaseRelatedResourceId ||
+                        realSlotEquipment.childBaseRelatedAssetId !=
+                        slotEquipment.childBaseRelatedAssetId ||
                         realSlotEquipment.child.contractAddress !=
                         slotEquipment.child.contractAddress ||
                         realSlotEquipment.child.tokenId !=
@@ -459,14 +459,14 @@ library LightmValidatorLib {
     function isSlotEquipmentValid(
         address targetContract,
         uint256 tokenId,
-        uint64 baseRelatedResourceId,
+        uint64 baseRelatedAssetId,
         ILightmEquippable.SlotEquipment memory slotEquipment
     ) public view returns (bool, string memory) {
         return
             isSlotEquipmentValid(
                 targetContract,
                 tokenId,
-                baseRelatedResourceId,
+                baseRelatedAssetId,
                 slotEquipment,
                 false
             );

@@ -2,30 +2,30 @@
 
 pragma solidity ^0.8.15;
 
-import "./IRMRKNesting.sol";
-import "./IRMRKMultiResource.sol";
+import "./IRMRKNestable.sol";
+import "./IRMRKMultiAsset.sol";
 
 interface ILightmEquippableEventsAndStruct {
-    event BaseRelatedResourceAdd(uint64 indexed id);
+    event BaseRelatedAssetAdd(uint64 indexed id);
 
     event SlotEquipmentsAdd(
         uint256 indexed tokenId,
-        uint64 indexed baseRelatedResourceId,
+        uint64 indexed baseRelatedAssetId,
         SlotEquipment[] slotEquipments
     );
 
     event SlotEquipmentsRemove(
         uint256 indexed tokenId,
-        uint64 indexed baseRelatedResourceId,
+        uint64 indexed baseRelatedAssetId,
         uint64[] indexes
     );
 
     /**
         @dev `baseAddress` and `partIds` be used to construct a BaseStorage instance,
         `targetBaseAddress` and `targetSlotId` be used to point at a Base slot,
-        the rest attributes are the same with `Resource`
+        the rest attributes are the same with `Asset`
      */
-    struct BaseRelatedResource {
+    struct BaseRelatedAsset {
         uint64 id;
         address baseAddress;
         uint64 targetSlotId;
@@ -43,10 +43,10 @@ interface ILightmEquippableEventsAndStruct {
 
     struct SlotEquipment {
         uint256 tokenId;
-        uint64 baseRelatedResourceId;
+        uint64 baseRelatedAssetId;
         uint64 slotId;
-        uint64 childBaseRelatedResourceId;
-        IRMRKNesting.Child child;
+        uint64 childBaseRelatedAssetId;
+        IRMRKNestable.Child child;
     }
 
     struct EquipmentPointer {
@@ -56,39 +56,39 @@ interface ILightmEquippableEventsAndStruct {
 }
 
 interface ILightmEquippable is ILightmEquippableEventsAndStruct {
-    function getBaseRelatedResource(uint64 baseRelatedResourceId)
+    function getBaseRelatedAsset(uint64 baseRelatedAssetId)
         external
         view
-        returns (BaseRelatedResource memory baseRelatedResource);
+        returns (BaseRelatedAsset memory baseRelatedAsset);
 
-    function getBaseRelatedResources(uint64[] memory)
+    function getBaseRelatedAssets(uint64[] memory)
         external
         view
-        returns (BaseRelatedResource[] memory);
+        returns (BaseRelatedAsset[] memory);
 
-    function getActiveBaseRelatedResources(uint256 tokenId)
+    function getActiveBaseRelatedAssets(uint256 tokenId)
         external
         view
         returns (uint64[] memory);
 
-    function getAllBaseRelatedResourceIds()
+    function getAllBaseRelatedAssetIds()
         external
         view
-        returns (uint64[] memory allBaseRelatedResourceIds);
+        returns (uint64[] memory allBaseRelatedAssetIds);
 
     function getSlotEquipment(
         uint256 tokenId,
-        uint64 baseRelatedResourceId,
+        uint64 baseRelatedAssetId,
         uint64 slotId
     ) external view returns (SlotEquipment memory slotEquipment);
 
     function getSlotEquipment(
         address childContract,
         uint256 childTokenId,
-        uint64 childBaseRelatedResourceId
+        uint64 childBaseRelatedAssetId
     ) external view returns (SlotEquipment memory slotEquipment);
 
-    function getSlotEquipments(uint256 tokenId, uint64 baseRelatedResource)
+    function getSlotEquipments(uint256 tokenId, uint64 baseRelatedAsset)
         external
         view
         returns (SlotEquipment[] memory slotEquipments);
@@ -105,20 +105,20 @@ interface ILightmEquippable is ILightmEquippableEventsAndStruct {
 
     function addSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedResourceId,
+        uint64 baseRelatedAssetId,
         SlotEquipment[] memory slotEquipments,
         bool doMoreCheck
     ) external;
 
     function removeSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedResourceId,
+        uint64 baseRelatedAssetId,
         uint64[] memory slotIds
     ) external;
 
     function removeSlotEquipments(
         address childContract,
         uint256 childTokenId,
-        uint64[] calldata childBaseRelatedResourceIds
+        uint64[] calldata childBaseRelatedAssetIds
     ) external;
 }

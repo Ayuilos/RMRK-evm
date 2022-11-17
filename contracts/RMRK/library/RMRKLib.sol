@@ -24,7 +24,7 @@ library RMRKLib {
         }
     }
 
-    //For resource storage array
+    //For asset storage array
     function removeItemByIndex(uint64[] storage array, uint256 index) internal {
         //Check to see if this is already gated by require in all calls
         require(index < array.length);

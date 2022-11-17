@@ -64,41 +64,41 @@ export async function oneTimeDeploy(
   noNormalDeploy = false,
 ) {
   const create2Deployer = await ethers.getContractAt('Create2Deployer', create2DeployerAddress);
-  const RMRKMultiResourceRenderUtils = await ethers.getContractFactory(
-    'RMRKMultiResourceRenderUtils',
+  const RMRKMultiAssetRenderUtils = await ethers.getContractFactory(
+    'RMRKMultiAssetRenderUtils',
   );
   const LightmValidatorLib = await ethers.getContractFactory('LightmValidatorLib');
 
   // ---------- Normal deployment
   // if (!deployed) {
-  //   const rmrkMultiResourceRenderUtils = await RMRKMultiResourceRenderUtils.deploy();
+  //   const rmrkMultiAssetRenderUtils = await RMRKMultiAssetRenderUtils.deploy();
 
-  //   await rmrkMultiResourceRenderUtils.deployed();
+  //   await rmrkMultiAssetRenderUtils.deployed();
   // }
   // -----------------
 
   // ---------- Create2 deployment
-  const rmrkMultiResourceRenderUtilsHash = ethers.utils.id('RMRKMultiResourceRenderUtils');
+  const rmrkMultiAssetRenderUtilsHash = ethers.utils.id('RMRKMultiAssetRenderUtils');
   if (!deployed) {
     await create2Deployer.deploy(
       0,
-      rmrkMultiResourceRenderUtilsHash,
-      RMRKMultiResourceRenderUtils.bytecode,
+      rmrkMultiAssetRenderUtilsHash,
+      RMRKMultiAssetRenderUtils.bytecode,
     );
   }
 
-  const rmrkMultiResourceRenderUtilsAddress: string = await create2Deployer[
+  const rmrkMultiAssetRenderUtilsAddress: string = await create2Deployer[
     'computeAddress(bytes32,bytes32)'
   ](
-    rmrkMultiResourceRenderUtilsHash,
-    ethers.utils.keccak256(RMRKMultiResourceRenderUtils.bytecode),
+    rmrkMultiAssetRenderUtilsHash,
+    ethers.utils.keccak256(RMRKMultiAssetRenderUtils.bytecode),
   );
-  const rmrkMultiResourceRenderUtils = await ethers.getContractAt(
+  const rmrkMultiAssetRenderUtils = await ethers.getContractAt(
     'LightmValidatorLib',
-    rmrkMultiResourceRenderUtilsAddress,
+    rmrkMultiAssetRenderUtilsAddress,
   );
 
-  console.log('RMRKMultiResourceRender Utils deployed', rmrkMultiResourceRenderUtils.address);
+  console.log('RMRKMultiAssetRender Utils deployed', rmrkMultiAssetRenderUtils.address);
   // ------------------
 
   // ---------- Normal deployment
@@ -156,8 +156,8 @@ export async function oneTimeDeploy(
 
   const FacetNames = [
     'DiamondLoupeFacet',
-    'LightmEquippableMultiResourceFacet',
-    'LightmEquippableNestingFacet',
+    'LightmEquippableMultiAssetFacet',
+    'LightmEquippableNestableFacet',
     'LightmEquippableFacet',
     'RMRKCollectionMetadataFacet',
     'LightmImpl',
@@ -168,29 +168,29 @@ export async function oneTimeDeploy(
   };
 
   const hashConcat: { [k: string]: string } = {
-    LightmEquippableMultiResourceFacet: versionSuffix,
-    LightmEquippableNestingFacet: versionSuffix,
+    LightmEquippableMultiAssetFacet: versionSuffix,
+    LightmEquippableNestableFacet: versionSuffix,
   };
 
   const constructorParams: { [k: string]: [any[], any[]] } = {
-    LightmEquippableNestingFacet: [
+    LightmEquippableNestableFacet: [
       ['string', 'string'],
-      [`LightmNesting${versionSuffix}`, `LN${versionSuffix}`],
+      [`LightmNestable${versionSuffix}`, `LN${versionSuffix}`],
     ],
-    LightmEquippableMultiResourceFacet: [
+    LightmEquippableMultiAssetFacet: [
       ['string', 'string'],
-      [`LightmMultiResource${versionSuffix}`, `LMR${versionSuffix}`],
+      [`LightmMultiAsset${versionSuffix}`, `LMR${versionSuffix}`],
     ],
   };
   const libraryLinking: { [k: string]: any } = {
-    LightmEquippableNestingFacet: {
+    LightmEquippableNestableFacet: {
       libraries: {
-        RMRKMultiResourceRenderUtils: rmrkMultiResourceRenderUtils.address,
+        RMRKMultiAssetRenderUtils: rmrkMultiAssetRenderUtils.address,
       },
     },
-    LightmEquippableMultiResourceFacet: {
+    LightmEquippableMultiAssetFacet: {
       libraries: {
-        RMRKMultiResourceRenderUtils: rmrkMultiResourceRenderUtils.address,
+        RMRKMultiAssetRenderUtils: rmrkMultiAssetRenderUtils.address,
       },
     },
     LightmEquippableFacet: {
@@ -200,12 +200,12 @@ export async function oneTimeDeploy(
     },
   };
   const toBeRemovedFunctions: { [k: string]: string[] } = {
-    LightmEquippableNestingFacet: [
-      // Take them in RMRKMultiResource
+    LightmEquippableNestableFacet: [
+      // Take them in RMRKMultiAsset
       'tokenURI(uint256)',
     ],
-    LightmEquippableMultiResourceFacet: [
-      // Take them in RMRKNesting
+    LightmEquippableMultiAssetFacet: [
+      // Take them in RMRKNestable
       'name()',
       'symbol()',
       'ownerOf(uint256)',
@@ -287,7 +287,7 @@ export async function oneTimeDeploy(
   return {
     cut,
     lightmValidatorLibAddress,
-    rmrkMultiResourceRenderUtilsAddress,
+    rmrkMultiAssetRenderUtilsAddress,
     diamondCutFacetAddress,
   };
 }

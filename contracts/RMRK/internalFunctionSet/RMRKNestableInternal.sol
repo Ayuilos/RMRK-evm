@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "../library/RMRKLib.sol";
-import "../interfaces/IRMRKNesting.sol";
+import "../interfaces/IRMRKNestable.sol";
 import "./ERC721Internal.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import {NestingStorage} from "./Storage.sol";
+import {NestableStorage} from "./Storage.sol";
 
 import "hardhat/console.sol";
 
@@ -14,20 +14,20 @@ error RMRKChildIndexOutOfRange();
 error RMRKDuplicateAdd();
 error RMRKInvalidChildReclaim();
 error RMRKIsNotContract();
-error RMRKIsNotNestingImplementer();
+error RMRKIsNotNestableImplementer();
 error RMRKMaxPendingChildrenReached();
 error RMRKMaxRecursiveBurnsReached(address childContract, uint256 childTokenId);
 error RMRKMintToNonRMRKImplementer();
-error RMRKNestingTooDeep();
-error RMRKNestingTransferToDescendant();
-error RMRKNestingTransferToNonRMRKNestingImplementer();
-error RMRKNestingTransferToSelf();
+error RMRKNestableTooDeep();
+error RMRKNestableTransferToDescendant();
+error RMRKNestableTransferToNonRMRKNestableImplementer();
+error RMRKNestableTransferToSelf();
 error RMRKNotApprovedOrDirectOwner();
 error RMRKParentChildMismatch();
 error RMRKPendingChildIndexOutOfRange();
 
-abstract contract RMRKNestingInternal is
-    IRMRKNestingEventsAndStruct,
+abstract contract RMRKNestableInternal is
+    IRMRKNestableEventsAndStruct,
     ERC721Internal
 {
     using RMRKLib for uint256;
@@ -35,12 +35,12 @@ abstract contract RMRKNestingInternal is
 
     uint256 private constant _MAX_LEVELS_TO_CHECK_FOR_INHERITANCE_LOOP = 100;
 
-    function getNestingState()
+    function getNestableState()
         internal
         pure
-        returns (NestingStorage.State storage)
+        returns (NestableStorage.State storage)
     {
-        return NestingStorage.getState();
+        return NestableStorage.getState();
     }
 
     // ------------------------ Ownership ------------------------
@@ -52,12 +52,12 @@ abstract contract RMRKNestingInternal is
         override
         returns (address)
     {
-        (address owner, uint256 ownerTokenId, bool isNft) = _rmrkOwnerOf(
+        (address owner, uint256 ownerTokenId, bool isNft) = _directOwnerOf(
             tokenId
         );
 
         if (isNft) {
-            owner = IRMRKNesting(owner).ownerOf(ownerTokenId);
+            owner = IRMRKNestable(owner).ownerOf(ownerTokenId);
         }
         if (owner == address(0)) revert ERC721InvalidTokenId();
         return owner;
@@ -68,7 +68,7 @@ abstract contract RMRKNestingInternal is
      * by a wallet, tokenId will be zero and isNft will be false. Otherwise, the returned data is the
      * contract address and tokenID of the owner NFT, as well as its isNft flag.
      */
-    function _rmrkOwnerOf(uint256 tokenId)
+    function _directOwnerOf(uint256 tokenId)
         internal
         view
         virtual
@@ -78,7 +78,7 @@ abstract contract RMRKNestingInternal is
             bool
         )
     {
-        RMRKOwner storage owner = getNestingState()._RMRKOwners[tokenId];
+        RMRKOwner storage owner = getNestableState()._RMRKOwners[tokenId];
         if (owner.ownerAddress == address(0)) revert ERC721InvalidTokenId();
 
         return (owner.ownerAddress, owner.tokenId, owner.isNft);
@@ -90,7 +90,7 @@ abstract contract RMRKNestingInternal is
         virtual
         returns (bool)
     {
-        (address owner, uint256 parentTokenId, ) = _rmrkOwnerOf(tokenId);
+        (address owner, uint256 parentTokenId, ) = _directOwnerOf(tokenId);
         if (parentTokenId != 0) {
             return (spender == owner);
         }
@@ -125,7 +125,7 @@ abstract contract RMRKNestingInternal is
         view
         returns (Child[] memory)
     {
-        Child[] memory children = getNestingState()._activeChildren[
+        Child[] memory children = getNestableState()._activeChildren[
             parentTokenId
         ];
         return children;
@@ -136,7 +136,7 @@ abstract contract RMRKNestingInternal is
         view
         returns (Child[] memory)
     {
-        Child[] memory pendingChildren = getNestingState()._pendingChildren[
+        Child[] memory pendingChildren = getNestableState()._pendingChildren[
             parentTokenId
         ];
         return pendingChildren;
@@ -149,7 +149,7 @@ abstract contract RMRKNestingInternal is
     {
         _isOverLength(parentTokenId, index, false);
 
-        Child memory child = getNestingState()._activeChildren[parentTokenId][
+        Child memory child = getNestableState()._activeChildren[parentTokenId][
             index
         ];
         return child;
@@ -162,7 +162,7 @@ abstract contract RMRKNestingInternal is
     {
         _isOverLength(parentTokenId, index, true);
 
-        Child memory child = getNestingState()._pendingChildren[parentTokenId][
+        Child memory child = getNestableState()._pendingChildren[parentTokenId][
             index
         ];
         return child;
@@ -183,7 +183,7 @@ abstract contract RMRKNestingInternal is
     {
         _requireMinted(tokenId);
 
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
 
         uint256 _index = ns._posInChildArray[childContract][childTokenId];
 
@@ -200,8 +200,8 @@ abstract contract RMRKNestingInternal is
                 isPending = true;
             }
         } else {
-            (address parentContract, , bool isNft) = IRMRKNesting(childContract)
-                .rmrkOwnerOf(childTokenId);
+            (address parentContract, , bool isNft) = IRMRKNestable(childContract)
+                .directOwnerOf(childTokenId);
 
             if (isNft && parentContract == address(this)) {
                 if (ns._activeChildren[tokenId].length > 0) {
@@ -241,7 +241,7 @@ abstract contract RMRKNestingInternal is
         if (_exists(tokenId)) revert ERC721TokenAlreadyMinted();
 
         if (isNft) {
-            _isNestingContract(to, 1);
+            _isNestableContract(to, 1);
         }
 
         _beforeTokenTransfer(address(0), to, tokenId);
@@ -249,7 +249,7 @@ abstract contract RMRKNestingInternal is
         getState()._balances[to] += 1;
 
         if (isNft) {
-            getNestingState()._RMRKOwners[tokenId] = RMRKOwner({
+            getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
                 ownerAddress: to,
                 tokenId: destinationId,
                 isNft: true
@@ -257,7 +257,7 @@ abstract contract RMRKNestingInternal is
 
             _sendToNFT(address(0), to, 0, destinationId, tokenId);
         } else {
-            getNestingState()._RMRKOwners[tokenId] = RMRKOwner({
+            getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
                 ownerAddress: to,
                 tokenId: 0,
                 isNft: false
@@ -288,7 +288,7 @@ abstract contract RMRKNestingInternal is
         uint256 destinationId,
         uint256 tokenId
     ) private {
-        IRMRKNesting destContract = IRMRKNesting(to);
+        IRMRKNestable destContract = IRMRKNestable(to);
 
         destContract.addChild(destinationId, tokenId);
         emit NestTransfer(from, to, fromTokenId, destinationId, tokenId);
@@ -301,7 +301,7 @@ abstract contract RMRKNestingInternal is
         virtual
         returns (uint256)
     {
-        (address immediateOwner, uint256 parentId, ) = _rmrkOwnerOf(tokenId);
+        (address immediateOwner, uint256 parentId, ) = _directOwnerOf(tokenId);
         address owner = _ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
@@ -319,7 +319,7 @@ abstract contract RMRKNestingInternal is
             delete s._tokenApprovals[tokenId];
         }
 
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
 
         _approve(address(0), tokenId);
         _cleanApprovals(tokenId);
@@ -352,7 +352,7 @@ abstract contract RMRKNestingInternal is
                 // We substract one to the next level to count for the token being burned, then add it again on returns
                 // This is to allow the behavior of 0 recursive burns meaning only the current token is deleted.
                 totalChildBurns +=
-                    IRMRKNesting(children[i].contractAddress).burn(
+                    IRMRKNestable(children[i].contractAddress).burn(
                         children[i].tokenId,
                         pendingRecursiveBurns - 1
                     ) +
@@ -405,14 +405,14 @@ abstract contract RMRKNestingInternal is
         bool isNft,
         uint256 destinationId
     ) private {
-        (address directOwner, uint256 fromTokenId, ) = _rmrkOwnerOf(tokenId);
+        (address directOwner, uint256 fromTokenId, ) = _directOwnerOf(tokenId);
         if (directOwner != from) revert ERC721TransferFromIncorrectOwner();
         if (to == address(0)) revert ERC721TransferToTheZeroAddress();
         if (isNft) {
-            _isNestingContract(to, 2);
+            _isNestableContract(to, 2);
 
             if (to == address(this) && tokenId == destinationId) {
-                revert RMRKNestingTransferToSelf();
+                revert RMRKNestableTransferToSelf();
             }
 
             _checkForInheritanceLoop(tokenId, to, destinationId);
@@ -454,14 +454,14 @@ abstract contract RMRKNestingInternal is
                 address nextOwner,
                 uint256 nextOwnerTokenId,
                 bool isNft
-            ) = IRMRKNesting(targetContract).rmrkOwnerOf(targetId);
+            ) = IRMRKNestable(targetContract).directOwnerOf(targetId);
             // If there's a final address, we're good. There's no loop.
             if (!isNft) {
                 return;
             }
             // Ff the current nft is an ancestor at some point, there is an inheritance loop
             if (nextOwner == address(this) && nextOwnerTokenId == currentId) {
-                revert RMRKNestingTransferToDescendant();
+                revert RMRKNestableTransferToDescendant();
             }
             // We reuse the parameters to save some contract size
             targetContract = nextOwner;
@@ -470,7 +470,7 @@ abstract contract RMRKNestingInternal is
                 ++i;
             }
         }
-        revert RMRKNestingTooDeep();
+        revert RMRKNestableTooDeep();
     }
 
     function _updateOwnerAndClearApprovals(
@@ -479,7 +479,7 @@ abstract contract RMRKNestingInternal is
         address to,
         bool isNft
     ) internal {
-        getNestingState()._RMRKOwners[tokenId] = RMRKOwner({
+        getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
             ownerAddress: to,
             tokenId: destinationId,
             isNft: isNft
@@ -500,7 +500,7 @@ abstract contract RMRKNestingInternal is
         returns (bool)
     {
         return
-            getNestingState()._RMRKOwners[tokenId].ownerAddress != address(0);
+            getNestableState()._RMRKOwners[tokenId].ownerAddress != address(0);
     }
 
     // ------------------------ CHILD MANAGEMENT ------------------------
@@ -511,7 +511,7 @@ abstract contract RMRKNestingInternal is
         _requireMinted(parentTokenId);
 
         address childContractAddress = _msgSender();
-        _isNestingContract(childContractAddress, 0);
+        _isNestableContract(childContractAddress, 0);
 
         (bool isDuplicate, , ) = _hasChild(
             parentTokenId,
@@ -522,9 +522,9 @@ abstract contract RMRKNestingInternal is
 
         _beforeAddChild(parentTokenId, childContractAddress, childTokenId);
 
-        IRMRKNesting childTokenContract = IRMRKNesting(childContractAddress);
+        IRMRKNestable childTokenContract = IRMRKNestable(childContractAddress);
         (address _parentContract, uint256 _parentTokenId, ) = childTokenContract
-            .rmrkOwnerOf(childTokenId);
+            .directOwnerOf(childTokenId);
         if (_parentContract != address(this) || _parentTokenId != parentTokenId)
             revert RMRKParentChildMismatch();
 
@@ -544,7 +544,7 @@ abstract contract RMRKNestingInternal is
         address childContractAddress,
         uint256 childTokenId
     ) internal virtual {
-        NestingStorage.State storage s = getNestingState();
+        NestableStorage.State storage s = getNestableState();
         uint256 index = s._posInChildArray[childContractAddress][childTokenId];
 
         Child memory child = s._pendingChildren[tokenId][index];
@@ -578,7 +578,7 @@ abstract contract RMRKNestingInternal is
         uint256 childTokenId,
         bool isPending
     ) internal virtual {
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
         uint256 index = ns._posInChildArray[childContractAddress][childTokenId];
 
         _isOverLength(tokenId, index, isPending);
@@ -633,7 +633,7 @@ abstract contract RMRKNestingInternal is
      * @dev Adds an instance of Child to the pending children array for tokenId. This is hardcoded to be 128 by default.
      */
     function _addChildToPending(uint256 tokenId, Child memory child) internal {
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
         uint256 len = ns._pendingChildren[tokenId].length;
         if (len < 128) {
             ns._posInChildArray[child.contractAddress][child.tokenId] = len;
@@ -647,7 +647,7 @@ abstract contract RMRKNestingInternal is
      * @dev Adds an instance of Child to the children array for tokenId.
      */
     function _addChildToChildren(uint256 tokenId, Child memory child) internal {
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
 
         ns._posInChildArray[child.contractAddress][child.tokenId] = ns
             ._activeChildren[tokenId]
@@ -736,27 +736,27 @@ abstract contract RMRKNestingInternal is
         _removeItemByIndex(array, index);
 
         // so have to change last child's index record in `posInChildArray`
-        getNestingState()._posInChildArray[lastChildContract][
+        getNestableState()._posInChildArray[lastChildContract][
             lastChildTokenId
         ] = index;
     }
 
-    function _isNestingContract(address contractAddress, uint256 errorIndex)
+    function _isNestableContract(address contractAddress, uint256 errorIndex)
         internal
         view
     {
         if (!contractAddress.isContract()) revert RMRKIsNotContract();
         if (
             !IERC165(contractAddress).supportsInterface(
-                type(IRMRKNesting).interfaceId
+                type(IRMRKNestable).interfaceId
             )
         ) {
             if (errorIndex == 1) {
                 revert RMRKMintToNonRMRKImplementer();
             } else if (errorIndex == 2) {
-                revert RMRKNestingTransferToNonRMRKNestingImplementer();
+                revert RMRKNestableTransferToNonRMRKNestableImplementer();
             } else {
-                revert RMRKIsNotNestingImplementer();
+                revert RMRKIsNotNestableImplementer();
             }
         }
     }
@@ -767,10 +767,10 @@ abstract contract RMRKNestingInternal is
         bool isPending
     ) internal view {
         if (isPending) {
-            if (getNestingState()._pendingChildren[tokenId].length <= index)
+            if (getNestableState()._pendingChildren[tokenId].length <= index)
                 revert RMRKPendingChildIndexOutOfRange();
         } else {
-            if (getNestingState()._activeChildren[tokenId].length <= index)
+            if (getNestableState()._activeChildren[tokenId].length <= index)
                 revert RMRKChildIndexOutOfRange();
         }
     }

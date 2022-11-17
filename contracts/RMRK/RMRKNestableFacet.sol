@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// RMRKNesting facet style which could be used alone
+// RMRKNestable facet style which could be used alone
 
 pragma solidity ^0.8.15;
 
@@ -11,16 +11,16 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
-import "./interfaces/IRMRKNesting.sol";
+import "./interfaces/IRMRKNestable.sol";
 import "./library/RMRKLib.sol";
-import "./internalFunctionSet/RMRKNestingInternal.sol";
+import "./internalFunctionSet/RMRKNestableInternal.sol";
 
-contract RMRKNestingFacet is
+contract RMRKNestableFacet is
     IERC165,
     IERC721,
     IERC721Metadata,
-    IRMRKNesting,
-    RMRKNestingInternal
+    IRMRKNestable,
+    RMRKNestableInternal
 {
     using RMRKLib for uint256;
     using Address for address;
@@ -43,7 +43,7 @@ contract RMRKNestingFacet is
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IRMRKNesting).interfaceId;
+            interfaceId == type(IRMRKNestable).interfaceId;
     }
 
     // ------------------------ Metadata ------------------------
@@ -81,7 +81,7 @@ contract RMRKNestingFacet is
         public
         view
         virtual
-        override(IERC721, IRMRKNesting)
+        override(IERC721, IRMRKNestable)
         returns (address)
     {
         return _ownerOf(tokenId);
@@ -92,7 +92,7 @@ contract RMRKNestingFacet is
     * by a wallet, tokenId will be zero and isNft will be false. Otherwise, the returned data is the
     * contract address and tokenID of the owner NFT, as well as its isNft flag.
     */
-    function rmrkOwnerOf(uint256 tokenId)
+    function directOwnerOf(uint256 tokenId)
         public
         view
         virtual
@@ -102,7 +102,7 @@ contract RMRKNestingFacet is
             bool
         )
     {
-        return _rmrkOwnerOf(tokenId);
+        return _directOwnerOf(tokenId);
     }
 
     /**
@@ -263,7 +263,7 @@ contract RMRKNestingFacet is
         virtual
         onlyApprovedOrOwner(tokenId)
     {
-        NestingStorage.State storage ns = getNestingState();
+        NestableStorage.State storage ns = getNestableState();
         for (uint256 i; i < ns._pendingChildren[tokenId].length; ) {
             Child memory child = ns._pendingChildren[tokenId][i];
             address childContract = child.contractAddress;
@@ -275,7 +275,7 @@ contract RMRKNestingFacet is
                 ++i;
             }
         }
-        delete getNestingState()._pendingChildren[tokenId];
+        delete getNestableState()._pendingChildren[tokenId];
 
         emit AllChildrenRejected(tokenId);
     }
