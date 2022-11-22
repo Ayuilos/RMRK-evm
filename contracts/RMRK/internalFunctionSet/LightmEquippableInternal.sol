@@ -39,8 +39,6 @@ abstract contract LightmEquippableInternal is
         BaseRelatedData memory baseRelatedData = getEquippableState()
             ._baseRelatedDatas[baseRelatedAssetId];
 
-        _baseRelatedDataExist(baseRelatedData);
-
         string memory assetMeta = _getAssetMetadata(baseRelatedAssetId);
 
         baseRelatedAsset = BaseRelatedAsset({
