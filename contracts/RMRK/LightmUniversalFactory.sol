@@ -17,8 +17,12 @@ import {LightmImpl} from "../implementations/LightmImplementer.sol";
 
 import "./interfaces/ILightmUniversalFactory.sol";
 
-import "hardhat/console.sol";
-
+/**
+ * @title LightmUniversalFactory
+ * @author Lightm
+ * @notice Factory on-chain that indexed all facet contract address
+ * and can be used for deploying RMRK NFT collection
+ */
 contract LightmUniversalFactory is ILightmUniversalFactory {
     string private constant VERSION = "0.1.0-alpha";
 
@@ -98,9 +102,15 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         return _implContractAddress;
     }
 
-    function deployCollection(LightmInit.InitStruct calldata initStruct)
-        external
-    {
+    /**
+     * @notice Used to deploy new collection.
+     * @dev It will deploy diamond contract only.
+     * @dev It will loads all facet cuts by `diamondCut` method after deployed.
+     * @param initStruct metadata of NFT
+     */
+    function deployCollection(
+        LightmInit.InitStruct calldata initStruct
+    ) external {
         Diamond instance = new Diamond(address(this), _diamondCutFacetAddress);
 
         address instanceAddress = address(instance);

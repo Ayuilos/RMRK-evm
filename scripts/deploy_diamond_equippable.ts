@@ -22,7 +22,7 @@ async function isHardhatChain() {
   return false;
 }
 
-export async function deployCreate2Deployer() {
+export async function deployCreate2Deployer(): Promise<string> {
   // if is in local chain, send some value to transaction signer address
   if (await isHardhatChain()) {
     const publicAccount = new ethers.Wallet(PUBLIC_ACCOUNT_PRIVATE_KEY, ethers.provider);
@@ -64,9 +64,7 @@ export async function oneTimeDeploy(
   noNormalDeploy = false,
 ) {
   const create2Deployer = await ethers.getContractAt('Create2Deployer', create2DeployerAddress);
-  const RMRKMultiAssetRenderUtils = await ethers.getContractFactory(
-    'RMRKMultiAssetRenderUtils',
-  );
+  const RMRKMultiAssetRenderUtils = await ethers.getContractFactory('RMRKMultiAssetRenderUtils');
   const LightmValidatorLib = await ethers.getContractFactory('LightmValidatorLib');
 
   // ---------- Normal deployment
@@ -89,10 +87,7 @@ export async function oneTimeDeploy(
 
   const rmrkMultiAssetRenderUtilsAddress: string = await create2Deployer[
     'computeAddress(bytes32,bytes32)'
-  ](
-    rmrkMultiAssetRenderUtilsHash,
-    ethers.utils.keccak256(RMRKMultiAssetRenderUtils.bytecode),
-  );
+  ](rmrkMultiAssetRenderUtilsHash, ethers.utils.keccak256(RMRKMultiAssetRenderUtils.bytecode));
   const rmrkMultiAssetRenderUtils = await ethers.getContractAt(
     'LightmValidatorLib',
     rmrkMultiAssetRenderUtilsAddress,
