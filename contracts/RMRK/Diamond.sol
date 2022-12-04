@@ -11,6 +11,13 @@ pragma solidity ^0.8.0;
 import {LibDiamond} from "./library/LibDiamond.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 
+/**
+ * @title Diamond
+ * @author Lightm
+ * @notice Entry for external call, all method must be call by Diamond contract
+ * @dev You should deploy diamond cut facet first before deploy Diamond
+ * @dev function in diamondCut will automatically register in constructor
+ */
 contract Diamond {
     constructor(address _contractOwner, address _diamondCutFacet) payable {
         LibDiamond.setContractOwner(_contractOwner);
@@ -27,8 +34,10 @@ contract Diamond {
         LibDiamond.diamondCut(cut, address(0), "");
     }
 
-    // Find facet for function that is called and execute the
-    // function if a facet is found and return any value.
+    /**
+     * @dev Find facet for function that is called and execute the
+     * @dev function if a facet is found and return any value.
+     */
     fallback() external payable {
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;

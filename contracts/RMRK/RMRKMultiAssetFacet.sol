@@ -26,6 +26,12 @@ import "./library/RMRKMultiAssetRenderUtils.sol";
     `mint` logic in your own implementer.
  */
 
+/**
+ * @title RMRKMultiAssetFacet
+ * @author Lightm
+ * @notice Smart contract of the RMRK Multi asset module.
+ * @dev This contract has been reoriganized into Diamond facet, we storage it by AppStorage
+ */
 contract RMRKMultiAssetFacet is
     IERC721,
     IERC721Metadata,
@@ -44,12 +50,9 @@ contract RMRKMultiAssetFacet is
         s._symbol = symbol_;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
@@ -73,38 +76,29 @@ contract RMRKMultiAssetFacet is
         return getState()._symbol;
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
         return _tokenURI(tokenId);
     }
 
     // ------------------------ Ownership ------------------------
 
-    function ownerOf(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (address)
-    {
+    function ownerOf(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
         return _ownerOf(tokenId);
     }
 
     /**
      * @dev See {IERC721-balanceOf}.
      */
-    function balanceOf(address owner)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
+    function balanceOf(
+        address owner
+    ) public view virtual override returns (uint256) {
         return _balanceOf(owner);
     }
 
@@ -124,37 +118,29 @@ contract RMRKMultiAssetFacet is
     /**
      * @dev See {IERC721-getApproved}.
      */
-    function getApproved(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (address)
-    {
+    function getApproved(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
         return _getApproved(tokenId);
     }
 
     /**
      * @dev See {IERC721-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved)
-        public
-        virtual
-        override
-    {
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public virtual override {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
     /**
      * @dev See {IERC721-isApprovedForAll}.
      */
-    function isApprovedForAll(address owner, address operator)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view virtual override returns (bool) {
         return _isApprovedForAll(owner, operator);
     }
 
@@ -197,38 +183,96 @@ contract RMRKMultiAssetFacet is
 
     // ------------------------ RESOURCES ------------------------
 
-    function acceptAsset(uint256 tokenId, uint64 assetId)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    /**
+     * @notice Accepts an asset at from the pending array of given token.
+     * @dev Migrates the asset from the token's pending asset array to the token's active asset array.
+     * @dev Active assets cannot be removed by anyone, but can be replaced by a new asset.
+     * @dev Requirements:
+     *
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - `assetId` must be in pending asset array.
+     * @dev Emits an {AssetAccepted} event.
+     * @param tokenId ID of the token for which to accept the pending asset
+     * @param assetId Index of the asset in the pending array to accept
+     */
+    function acceptAsset(
+        uint256 tokenId,
+        uint64 assetId
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _acceptAsset(tokenId, assetId);
     }
 
-    function rejectAsset(uint256 tokenId, uint64 assetId)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    /**
+     * @notice Rejects an asset from the pending array of given token.
+     * @dev Removes the asset from the token's pending asset array.
+     * @dev Requirements:
+     *
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - `assetId` must be in pending array.
+     * @dev Emits a {AssetRejected} event.
+     * @param tokenId ID of the token that the asset is being rejected from
+     * @param assetId Id of the asset in the pending array to be rejected
+     */
+    function rejectAsset(
+        uint256 tokenId,
+        uint64 assetId
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _rejectAsset(tokenId, assetId);
     }
 
-    function rejectAllAssets(uint256 tokenId)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    /**
+     * @notice Rejects all assets from the pending array of a given token.
+     * @dev Effecitvely deletes the pending array.
+     * @dev Requirements:
+     *
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     * @dev Emits a {AssetRejected} event with assetId = 0.
+     * @param tokenId ID of the token of which to clear the pending array.
+     */
+    function rejectAllAssets(
+        uint256 tokenId
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _rejectAllAssets(tokenId);
     }
 
-    function setPriority(uint256 tokenId, uint16[] memory priorities)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    /**
+     * @notice Sets a new priority array for a given token.
+     * @dev The priority array is a non-sequential list of `uint16`s, where the lowest value is considered highest
+     *  priority.
+     * @dev Value `0` of a priority is a special case equivalent to unitialized.
+     * @dev Requirements:
+     *
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - The length of `priorities` must be equal the length of the active assets array.
+     * @dev Emits a {AssetPrioritySet} event.
+     * @param tokenId ID of the token to set the priorities for
+     * @param priorities An array of priorities of active assets. The succesion of items in the priorities array
+     *  matches that of the succesion of items in the active array
+     */
+    function setPriority(
+        uint256 tokenId,
+        uint16[] memory priorities
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _setPriority(tokenId, priorities);
     }
 
+    /**
+     * @notice Used to grant permission to the user to manage token's assets.
+     * @dev This differs from transfer approvals, as approvals are not cleared when the approved party accepts or
+     *  rejects an asset, or sets asset priorities. This approval is cleared on token transfer.
+     * @dev Only a single account can be approved at a time, so approving the `0x0` address clears previous approvals.
+     * @dev Requirements:
+     *
+     *  - The caller must own the token or be an approved operator.
+     *  - `tokenId` must exist.
+     * @dev Emits an {ApprovalForAssets} event.
+     * @param to Address of the account to grant the approval to
+     * @param tokenId ID of the token for which the approval to manage the assets is granted
+     */
     function approveForAssets(address to, uint256 tokenId) external virtual {
         address owner = ownerOf(tokenId);
         if (to == owner) revert RMRKApprovalForAssetsToCurrentOwner();
@@ -241,76 +285,110 @@ contract RMRKMultiAssetFacet is
         _approveForAssets(to, tokenId);
     }
 
-    function setApprovalForAllForAssets(address operator, bool approved)
-        external
-        virtual
-    {
+    /**
+     * @notice Used to add or remove an operator of assets for the caller.
+     * @dev Operators can call {acceptAsset}, {rejectAsset}, {rejectAllAssets} or {setPriority} for any token
+     *  owned by the caller.
+     * @dev Requirements:
+     *
+     *  - The `operator` cannot be the caller.
+     * @dev Emits an {ApprovalForAllForAssets} event.
+     * @param operator Address of the account to which the operator role is granted or revoked from
+     * @param approved The boolean value indicating whether the operator role is being granted (`true`) or revoked
+     *  (`false`)
+     */
+    function setApprovalForAllForAssets(
+        address operator,
+        bool approved
+    ) external virtual {
         address owner = _msgSender();
         if (owner == operator) revert RMRKApproveForAssetsToCaller();
 
         _setApprovalForAllForAssets(owner, operator, approved);
     }
 
-    function getAssetMetadata(uint64 assetId)
-        public
-        view
-        virtual
-        returns (string memory)
-    {
+    /**
+     * @notice Used to fetch the asset metadata of the specified token's for given asset.
+     * @dev Assets are stored by reference mapping `_assets[assetId]`.
+     * @dev Can be overriden to implement enumerate, fallback or other custom logic.
+     * @param assetId Asset Id, must be in the pending or active assets array
+     * @return string Metadata of the asset
+     */
+    function getAssetMetadata(
+        uint64 assetId
+    ) public view virtual returns (string memory) {
         return _getAssetMetadata(assetId);
     }
 
-    function getActiveAssets(uint256 tokenId)
-        public
-        view
-        virtual
-        returns (uint64[] memory)
-    {
+    /**
+     * @notice Used to retrieve the active asset IDs of a given token.
+     * @dev Assets metadata is stored by reference mapping `_asset[assetId]`.
+     * @param tokenId ID of the token to query
+     * @return uint64[] Array of active asset IDs
+     */
+    function getActiveAssets(
+        uint256 tokenId
+    ) public view virtual returns (uint64[] memory) {
         return _getActiveAssets(tokenId);
     }
 
-    function getPendingAssets(uint256 tokenId)
-        public
-        view
-        virtual
-        returns (uint64[] memory)
-    {
+    /**
+     * @notice Returns pending asset IDs for a given token
+     * @dev Pending assets metadata is stored by reference mapping _pendingAsset[assetId]
+     * @param tokenId the token ID to query
+     * @return uint64[] pending asset IDs
+     */
+    function getPendingAssets(
+        uint256 tokenId
+    ) public view virtual returns (uint64[] memory) {
         return _getPendingAssets(tokenId);
     }
 
-    function getActiveAssetPriorities(uint256 tokenId)
-        public
-        view
-        virtual
-        returns (uint16[] memory)
-    {
+    /**
+     * @notice Used to retrieve active asset priorities of a given token.
+     * @dev Asset priorities are a non-sequential array of uint16 values with an array size equal to active asset
+     *  priorites.
+     * @param tokenId ID of the token to query
+     * @return uint16[] Array of active asset priorities
+     */
+    function getActiveAssetPriorities(
+        uint256 tokenId
+    ) public view virtual returns (uint16[] memory) {
         return _getActiveAssetPriorities(tokenId);
     }
 
-    function getAssetOverwrites(uint256 tokenId, uint64 assetId)
-        public
-        view
-        virtual
-        returns (uint64)
-    {
+    function getAssetOverwrites(
+        uint256 tokenId,
+        uint64 assetId
+    ) public view virtual returns (uint64) {
         return _getAssetOverwrites(tokenId, assetId);
     }
 
-    function getApprovedForAssets(uint256 tokenId)
-        public
-        view
-        virtual
-        returns (address)
-    {
+    /**
+     * @notice Used to retrieve the address of the account approved to manage assets of a given token.
+     * @dev Requirements:
+     *
+     *  - `tokenId` must exist.
+     * @param tokenId ID of the token for which to retrieve the approved address
+     * @return address Address of the account that is approved to manage the specified token's assets
+     */
+    function getApprovedForAssets(
+        uint256 tokenId
+    ) public view virtual returns (address) {
         return _getApprovedForAssets(tokenId);
     }
 
-    function isApprovedForAllForAssets(address owner, address operator)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    /**
+     * @notice Used to check whether the address has been granted the operator role by a given address or not.
+     * @dev See {setApprovalForAllForAssets}.
+     * @param owner Address of the account that we are checking for whether it has granted the operator role
+     * @param operator Address of the account that we are checking whether it has the operator role or not
+     * @return bool The boolean value indicating wehter the account we are checking has been granted the operator role
+     */
+    function isApprovedForAllForAssets(
+        address owner,
+        address operator
+    ) public view virtual returns (bool) {
         return _isApprovedForAllForAssets(owner, operator);
     }
 }

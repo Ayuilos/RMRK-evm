@@ -106,7 +106,8 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
      * @notice Used to deploy new collection.
      * @dev It will deploy diamond contract only.
      * @dev It will loads all facet cuts by `diamondCut` method after deployed.
-     * @param initStruct metadata of NFT
+     * @dev Diamond contract can use all DiamondCut methods because it has loaded when Diamond contract init.
+     * @param initStruct metadata of NFT like name,symbol
      */
     function deployCollection(
         LightmInit.InitStruct calldata initStruct
