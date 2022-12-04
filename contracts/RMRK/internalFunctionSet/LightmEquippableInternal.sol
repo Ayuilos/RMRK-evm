@@ -312,7 +312,7 @@ abstract contract LightmEquippableInternal is
             uint256 equippedSlotsLen = es
             ._equippedSlots[tokenId][baseRelatedAssetId].length;
 
-            uint256 equippedChildBRRsLen = es
+            uint256 equippedChildBRAsLen = es
             ._equippedChildBaseRelatedAssets[childContract][childTokenId]
                 .length;
 
@@ -344,7 +344,7 @@ abstract contract LightmEquippableInternal is
                     sE.childBaseRelatedAssetId
                 ] = ILightmEquippableEventsAndStruct.EquipmentPointer({
                 equipmentIndex: sELen,
-                recordIndex: equippedChildBRRsLen
+                recordIndex: equippedChildBRAsLen
             });
 
             es._slotEquipments.push(sE);
@@ -396,18 +396,18 @@ abstract contract LightmEquippableInternal is
                     child.contractAddress
                 ][child.tokenId][slotEquipment.childBaseRelatedAssetId];
 
-                uint64[] storage bRRIds = es._equippedChildBaseRelatedAssets[
+                uint64[] storage bRAIds = es._equippedChildBaseRelatedAssets[
                     child.contractAddress
                 ][child.tokenId];
 
-                uint64 lastBRRId = bRRIds[bRRIds.length - 1];
+                uint64 lastBRAId = bRAIds[bRAIds.length - 1];
 
-                bRRIds.removeItemByIndex(cEPointer.recordIndex);
+                bRAIds.removeItemByIndex(cEPointer.recordIndex);
 
-                // Due to the `removeItemByIndex` code detail, has to update the lastBRR's `recordIndex`
+                // Due to the `removeItemByIndex` code detail, has to update the lastBRA's `recordIndex`
                 es
                 ._childEquipmentPointers[child.contractAddress][child.tokenId][
-                    lastBRRId
+                    lastBRAId
                 ].recordIndex = cEPointer.recordIndex;
             }
 
@@ -443,9 +443,10 @@ abstract contract LightmEquippableInternal is
             {
                 SlotEquipment[] storage slotEquipments = es._slotEquipments;
 
-                uint256 lastIndex = slotEquipments.length;
+                uint256 lastIndex = slotEquipments.length - 1;
 
                 slotEquipment = slotEquipments[lastIndex];
+                slotEquipments[ePointer.equipmentIndex] = slotEquipments[lastIndex];
 
                 slotEquipments.pop();
 
@@ -484,7 +485,7 @@ abstract contract LightmEquippableInternal is
         uint256 parentTokenId;
         uint256 len = childBaseRelatedAssetIds.length;
         uint64[] memory baseRelatedAssetIds = new uint64[](len);
-        uint256 pointerOfBRRIds = 0;
+        uint256 pointerOfBRAIds = 0;
         uint64[][] memory slotIds = new uint64[][](len);
         uint256[] memory pointers = new uint256[](len);
 
@@ -509,11 +510,11 @@ abstract contract LightmEquippableInternal is
                 slotIds[index][pointer] = slotId;
                 pointers[index]++;
             } else {
-                baseRelatedAssetIds[pointerOfBRRIds] = baseRelatedAssetId;
-                slotIds[pointerOfBRRIds][0] = slotId;
+                baseRelatedAssetIds[pointerOfBRAIds] = baseRelatedAssetId;
+                slotIds[pointerOfBRAIds][0] = slotId;
 
-                pointers[pointerOfBRRIds] = 1;
-                pointerOfBRRIds++;
+                pointers[pointerOfBRAIds] = 1;
+                pointerOfBRAIds++;
             }
 
             unchecked {
@@ -521,14 +522,14 @@ abstract contract LightmEquippableInternal is
             }
         }
 
-        for (uint256 i; i < pointerOfBRRIds; ) {
+        for (uint256 i; i < pointerOfBRAIds; ) {
             uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
-            uint64[] memory slotIdsOfBRR = slotIds[i];
+            uint64[] memory slotIdsOfBRA = slotIds[i];
 
             _removeSlotEquipments(
                 parentTokenId,
                 baseRelatedAssetId,
-                slotIdsOfBRR
+                slotIdsOfBRA
             );
 
             unchecked {
