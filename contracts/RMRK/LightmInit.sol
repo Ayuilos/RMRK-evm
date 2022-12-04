@@ -11,10 +11,11 @@ import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage} from "./internalFunctionSet/Storage.sol";
 
-// It is expected that this contract is customized if you want to deploy your diamond
-// with data from a deployment script. Use the init function to initialize state variables
-// of your diamond. Add parameters to the init funciton if you need to.
-
+/**
+ * @dev It is expected that this contract is customized if you want to deploy your diamond
+ * with data from a deployment script. Use the init function to initialize state variables
+ * of your diamond. Add parameters to the init funciton if you need to.
+ */
 contract LightmInit {
     struct InitStruct {
         string name;
@@ -23,8 +24,10 @@ contract LightmInit {
         string collectionMetadataURI;
     }
 
-    // You can add parameters to this function in order to pass in
-    // data to set your own state variables
+    /**
+     * @dev You can add parameters to this function in order to pass in
+     * You can add parameters to this function in order to pass in
+     */
     function init(InitStruct calldata _initStruct, address _owner) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -55,8 +58,7 @@ contract LightmInit {
         s._name = _initStruct.name;
         s._symbol = _initStruct.symbol;
 
-        MultiAssetStorage.State storage mrs = MultiAssetStorage
-            .getState();
+        MultiAssetStorage.State storage mrs = MultiAssetStorage.getState();
         mrs._fallbackURI = _initStruct.fallbackURI;
 
         CollectionMetadataStorage.State storage cms = CollectionMetadataStorage

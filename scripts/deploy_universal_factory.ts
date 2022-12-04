@@ -1,3 +1,4 @@
+/* eslint-disable node/no-missing-import */
 import { ethers } from 'hardhat';
 import { LightmInit__factory } from '../typechain-types';
 import { ILightmUniversalFactory } from '../typechain-types/contracts/RMRK/LightmUniversalFactory';
