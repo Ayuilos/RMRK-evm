@@ -30,7 +30,7 @@ export async function deployBase() {
       itemType: Slot,
       z: 1,
       equippable: [],
-      metadataURI: '',
+      metadataURI: 'ipfs://bafkreihfdwwxn6ugoswbp7or34ue4nyziqw6smb755l2xqsvsisxhorih4',
     },
   };
 
@@ -40,7 +40,7 @@ export async function deployBase() {
       itemType: Slot,
       z: 1,
       equippable: [],
-      metadataURI: '',
+      metadataURI: 'ipfs://bafkreidaahujz2pjf6xzpcpctrms6gjxtrbomdz7oce7rdtyafrxm7uawi',
     },
   };
 
