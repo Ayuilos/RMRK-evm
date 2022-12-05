@@ -9,6 +9,7 @@ interface ILightmUniversalFactory {
     struct ConstructParams {
         address validatorLibAddress;
         address maRenderUtilsAddress;
+        address equippableRenderUtilsAddress;
         address diamondCutFacetAddress;
         address diamondLoupeFacetAddress;
         address nestableFacetAddress;
@@ -31,6 +32,8 @@ interface ILightmUniversalFactory {
     function validatorLibAddress() external view returns (address);
 
     function maRenderUtilsAddress() external view returns (address);
+
+    function equippableRenderUtilsAddress() external view returns (address);
 
     function nestableFacetAddress() external view returns (address);
 
