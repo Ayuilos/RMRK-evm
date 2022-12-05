@@ -562,7 +562,7 @@ abstract contract LightmEquippableInternal is
         uint256 childTokenId,
         bool isPending
     ) internal virtual override {
-        _childEquipmentCheck(_msgSender(), childTokenId);
+        _childEquipmentCheck(childContractAddress, childTokenId);
 
         RMRKNestableInternal._unnestChild(
             tokenId,
