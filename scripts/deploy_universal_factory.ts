@@ -20,7 +20,7 @@ export default async function deployUniversalFactory(
 
   const constructorParams = ethers.utils.defaultAbiCoder.encode(
     [
-      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
+      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address equippableRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
     ],
     [constructParams],
   );
@@ -71,6 +71,7 @@ async function deploy() {
   const factoryAddress = await deployUniversalFactory(create2DeployerAddress, {
     validatorLibAddress: rest.lightmValidatorLibAddress,
     maRenderUtilsAddress: rest.rmrkMultiAssetRenderUtilsAddress,
+    equippableRenderUtilsAddress: rest.lightmEquippableRenderUtilsAddress,
     diamondCutFacetAddress: rest.diamondCutFacetAddress,
     diamondLoupeFacetAddress: cut[0].facetAddress,
     multiAssetFacetAddress: cut[1].facetAddress,

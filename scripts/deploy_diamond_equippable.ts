@@ -64,9 +64,7 @@ export async function oneTimeDeploy(
   noNormalDeploy = false,
 ) {
   const create2Deployer = await ethers.getContractAt('Create2Deployer', create2DeployerAddress);
-  const RMRKMultiAssetRenderUtils = await ethers.getContractFactory(
-    'RMRKMultiAssetRenderUtils',
-  );
+  const RMRKMultiAssetRenderUtils = await ethers.getContractFactory('RMRKMultiAssetRenderUtils');
   const LightmValidatorLib = await ethers.getContractFactory('LightmValidatorLib');
 
   // ---------- Normal deployment
@@ -89,10 +87,7 @@ export async function oneTimeDeploy(
 
   const rmrkMultiAssetRenderUtilsAddress: string = await create2Deployer[
     'computeAddress(bytes32,bytes32)'
-  ](
-    rmrkMultiAssetRenderUtilsHash,
-    ethers.utils.keccak256(RMRKMultiAssetRenderUtils.bytecode),
-  );
+  ](rmrkMultiAssetRenderUtilsHash, ethers.utils.keccak256(RMRKMultiAssetRenderUtils.bytecode));
   const rmrkMultiAssetRenderUtils = await ethers.getContractAt(
     'LightmValidatorLib',
     rmrkMultiAssetRenderUtilsAddress,
@@ -124,6 +119,39 @@ export async function oneTimeDeploy(
   );
 
   console.log('RMRKValidator Lib deployed', lightmValidatorLib.address);
+  // ------------------
+
+  const LightmEquippableRenderUtils = await ethers.getContractFactory(
+    'LightmEquippableRenderUtils',
+    { libraries: { LightmValidatorLib: lightmValidatorLibAddress } },
+  );
+  // ---------- Normal deployment
+  // if (!deployed) {
+  //   const lightmEquippableRenderUtils = await LightmEquippableRenderUtils.deploy();
+
+  //   await lightmEquippableRenderUtils.deployed();
+  // }
+  // -----------------
+
+  // ---------- Create2 deployment
+  const lightmEquippableRenderUtilsHash = ethers.utils.id('LightmEquippableRenderUtils');
+  if (!deployed) {
+    await create2Deployer.deploy(
+      0,
+      lightmEquippableRenderUtilsHash,
+      LightmEquippableRenderUtils.bytecode,
+    );
+  }
+
+  const lightmEquippableRenderUtilsAddress: string = await create2Deployer[
+    'computeAddress(bytes32,bytes32)'
+  ](lightmEquippableRenderUtilsHash, ethers.utils.keccak256(LightmEquippableRenderUtils.bytecode));
+  const lightmEquippableRenderUtils = await ethers.getContractAt(
+    'LightmValidatorLib',
+    lightmEquippableRenderUtilsAddress,
+  );
+
+  console.log('LightmEquippableRender Utils deployed', lightmEquippableRenderUtils.address);
   // ------------------
 
   // deploy DiamondCutFacet
@@ -288,6 +316,7 @@ export async function oneTimeDeploy(
     cut,
     lightmValidatorLibAddress,
     rmrkMultiAssetRenderUtilsAddress,
+    lightmEquippableRenderUtilsAddress,
     diamondCutFacetAddress,
   };
 }

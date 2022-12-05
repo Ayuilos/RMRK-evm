@@ -24,6 +24,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     address private immutable _validatorLibAddress;
     address private immutable _maRenderUtilsAddress;
+    address private immutable _equippableRenderUtilsAddress;
     address private immutable _diamondCutFacetAddress;
     address private immutable _diamondLoupeFacetAddress;
     address private immutable _nestableFacetAddress;
@@ -38,6 +39,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
     constructor(ConstructParams memory params) {
         _validatorLibAddress = params.validatorLibAddress;
         _maRenderUtilsAddress = params.maRenderUtilsAddress;
+        _equippableRenderUtilsAddress = params.equippableRenderUtilsAddress;
         _diamondCutFacetAddress = params.diamondCutFacetAddress;
         _diamondLoupeFacetAddress = params.diamondLoupeFacetAddress;
         _nestableFacetAddress = params.nestableFacetAddress;
@@ -72,6 +74,10 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     function maRenderUtilsAddress() external view returns (address) {
         return _maRenderUtilsAddress;
+    }
+
+    function equippableRenderUtilsAddress() external view returns (address) {
+        return _equippableRenderUtilsAddress;
     }
 
     function nestableFacetAddress() external view returns (address) {
