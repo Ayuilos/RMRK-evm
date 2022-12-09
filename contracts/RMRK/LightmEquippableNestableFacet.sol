@@ -8,9 +8,10 @@ contract LightmEquippableNestableFacet is
     RMRKNestableFacet,
     LightmEquippableInternal
 {
-    constructor(string memory name_, string memory symbol_)
-        RMRKNestableFacet(name_, symbol_)
-    {}
+    constructor(
+        string memory name_,
+        string memory symbol_
+    ) RMRKNestableFacet(name_, symbol_) {}
 
     // No need to override `supportsInterface` here,
     // this contract is only used to be cut by Diamond
@@ -20,15 +21,7 @@ contract LightmEquippableNestableFacet is
         uint256 tokenId,
         address childContract,
         uint256 childTokenId
-    )
-        public
-        view
-        returns (
-            bool found,
-            bool isPending,
-            uint256 index
-        )
-    {
+    ) public view returns (bool found, bool isPending, uint256 index) {
         return _hasChild(tokenId, childContract, childTokenId);
     }
 
@@ -69,14 +62,16 @@ contract LightmEquippableNestableFacet is
         nestTransferFrom(_msgSender(), to, tokenId, destinationId);
     }
 
-    function _burn(uint256 tokenId)
-        internal
-        override(ERC721Internal, RMRKNestableMultiAssetInternal)
-    {
+    function _burn(
+        uint256 tokenId
+    ) internal override(ERC721Internal, RMRKNestableMultiAssetInternal) {
         RMRKNestableMultiAssetInternal._burn(tokenId);
     }
 
-    function _burn(uint256 tokenId, uint256 maxChildrenBurns)
+    function _burn(
+        uint256 tokenId,
+        uint256 maxChildrenBurns
+    )
         internal
         override(RMRKNestableInternal, LightmEquippableInternal)
         returns (uint256)
@@ -84,7 +79,9 @@ contract LightmEquippableNestableFacet is
         return LightmEquippableInternal._burn(tokenId, maxChildrenBurns);
     }
 
-    function _exists(uint256 tokenId)
+    function _exists(
+        uint256 tokenId
+    )
         internal
         view
         override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
@@ -93,14 +90,16 @@ contract LightmEquippableNestableFacet is
         return RMRKNestableMultiAssetInternal._exists(tokenId);
     }
 
-    function _mint(address to, uint256 tokenId)
-        internal
-        override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
-    {
+    function _mint(
+        address to,
+        uint256 tokenId
+    ) internal override(RMRKNestableInternal, RMRKNestableMultiAssetInternal) {
         RMRKNestableMultiAssetInternal._mint(to, tokenId);
     }
 
-    function _ownerOf(uint256 tokenId)
+    function _ownerOf(
+        uint256 tokenId
+    )
         internal
         view
         override(RMRKNestableInternal, RMRKNestableMultiAssetInternal)
@@ -109,7 +108,9 @@ contract LightmEquippableNestableFacet is
         return RMRKNestableMultiAssetInternal._ownerOf(tokenId);
     }
 
-    function _tokenURI(uint256 tokenId)
+    function _tokenURI(
+        uint256 tokenId
+    )
         internal
         view
         override(ERC721Internal, RMRKNestableMultiAssetInternal)
