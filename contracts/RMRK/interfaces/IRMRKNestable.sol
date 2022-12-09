@@ -79,19 +79,15 @@ interface IRMRKNestable is IRMRKNestableEventsAndStruct, IERC165 {
      * @dev Returns the immediate owner of an NFT -- if the owner is another RMRK NFT, the uint256 will reflect
      *
      */
-    function directOwnerOf(uint256 tokenId)
-        external
-        view
-        returns (
-            address,
-            uint256,
-            bool
-        );
+    function directOwnerOf(
+        uint256 tokenId
+    ) external view returns (address, uint256, bool);
 
     //TODO: Docs
-    function burn(uint256 tokenId, uint256 maxRecursiveBurns)
-        external
-        returns (uint256);
+    function burn(
+        uint256 tokenId,
+        uint256 maxRecursiveBurns
+    ) external returns (uint256);
 
     /**
      * @dev Function to be called into by other instances of RMRK nestable contracts to update the `child` struct
@@ -151,37 +147,35 @@ interface IRMRKNestable is IRMRKNestableEventsAndStruct, IERC165 {
      * @dev Returns array of child objects existing for `parentTokenId`.
      *
      */
-    function childrenOf(uint256 parentTokenId)
-        external
-        view
-        returns (Child[] memory);
+    function childrenOf(
+        uint256 parentTokenId
+    ) external view returns (Child[] memory);
 
     /**
      * @dev Returns array of pending child objects existing for `parentTokenId`.
      *
      */
-    function pendingChildrenOf(uint256 parentTokenId)
-        external
-        view
-        returns (Child[] memory);
+    function pendingChildrenOf(
+        uint256 parentTokenId
+    ) external view returns (Child[] memory);
 
     /**
      * @dev Returns a single child object existing at `index` on `parentTokenId`.
      *
      */
-    function childOf(uint256 parentTokenId, uint256 index)
-        external
-        view
-        returns (Child memory);
+    function childOf(
+        uint256 parentTokenId,
+        uint256 index
+    ) external view returns (Child memory);
 
     /**
      * @dev Returns a single pending child object existing at `index` on `parentTokenId`.
      *
      */
-    function pendingChildOf(uint256 parentTokenId, uint256 index)
-        external
-        view
-        returns (Child memory);
+    function pendingChildOf(
+        uint256 parentTokenId,
+        uint256 index
+    ) external view returns (Child memory);
 
     /**
      * @dev Function called when calling transferFrom with the target as another NFT via `tokenId`

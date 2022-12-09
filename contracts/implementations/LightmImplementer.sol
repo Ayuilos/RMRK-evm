@@ -18,14 +18,14 @@ contract LightmImpl is
         owner = getLightmImplState()._owner;
     }
 
+    // TODO: expand it to public mint and merkle tree mint
     function mint(address to, uint256 tokenId) public onlyOwner {
         _safeMint(to, tokenId);
     }
 
-    function setCollectionMetadata(string calldata newMetadata)
-        external
-        onlyOwner
-    {
+    function setCollectionMetadata(
+        string calldata newMetadata
+    ) external onlyOwner {
         _setCollectionMetadata(newMetadata);
     }
 
@@ -41,10 +41,10 @@ contract LightmImpl is
         _addBaseRelatedAssetEntry(id, baseRelatedAssetData, metadataURI);
     }
 
-    function addAssetEntry(uint64 id, string memory metadataURI)
-        external
-        onlyOwner
-    {
+    function addAssetEntry(
+        uint64 id,
+        string memory metadataURI
+    ) external onlyOwner {
         _addAssetEntry(id, metadataURI);
     }
 
