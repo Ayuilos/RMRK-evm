@@ -19,7 +19,7 @@ contract LightmImpl is
     }
 
     // TODO: expand it to public mint and merkle tree mint
-    function mint(address to, uint256 tokenId) public onlyOwner {
+    function mint(address to, uint256 tokenId) public payable onlyOwner {
         _safeMint(to, tokenId);
     }
 

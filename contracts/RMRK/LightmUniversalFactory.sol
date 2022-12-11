@@ -104,9 +104,9 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         return _implContractAddress;
     }
 
-    function deployCollection(LightmInit.InitStruct calldata initStruct)
-        external
-    {
+    function deployCollection(
+        LightmInit.InitStruct calldata initStruct
+    ) external {
         Diamond instance = new Diamond(address(this), _diamondCutFacetAddress);
 
         address instanceAddress = address(instance);
