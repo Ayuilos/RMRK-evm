@@ -21,7 +21,9 @@ error RMRKNotApprovedForAssetsOrOwner();
 error RMRKApprovalForAssetsToCurrentOwner();
 error RMRKApproveForAssetsCallerIsNotOwnerNorApprovedForAll();
 error RMRKApproveForAssetsToCaller();
-error RMRKWriteToZero();
+error RMRKIdZeroForbidden();
+error RMRKTokenDoesNotHaveAsset();
+error RMRKUnexpectedNumberOfAssets();
 
 abstract contract RMRKMultiAssetInternal is
     ERC721Internal,
@@ -112,10 +114,9 @@ abstract contract RMRKMultiAssetInternal is
     }
 
     function _addAssetEntry(uint64 id, string memory metadataURI) internal {
-        if (id == uint64(0)) revert RMRKWriteToZero();
+        if (id == uint64(0)) revert RMRKIdZeroForbidden();
 
-        MultiAssetStorage.State storage state = MultiAssetStorage
-            .getState();
+        MultiAssetStorage.State storage state = MultiAssetStorage.getState();
 
         if (bytes(state._assets[id]).length > 0)
             revert RMRKAssetAlreadyExists();
@@ -138,6 +139,19 @@ abstract contract RMRKMultiAssetInternal is
         if (bytes(metadata).length == 0) revert RMRKNoAssetMatchingId();
 
         return metadata;
+    }
+
+    function _getAssetMetadata(uint256 tokenId, uint64 assetId)
+        internal
+        view
+        virtual
+        returns (string memory)
+    {
+        MultiAssetStorage.State storage mrs = getMRState();
+
+        if (!mrs._tokenAssets[tokenId][assetId])
+            revert RMRKTokenDoesNotHaveAsset();
+        return mrs._assets[assetId];
     }
 
     function _getAssetMetaForToken(uint256 tokenId, uint256 assetIndex)
@@ -171,23 +185,23 @@ abstract contract RMRKMultiAssetInternal is
         }
 
         uint64[] storage activeAssets = s._activeAssets[tokenId];
-        uint64 overwrites = s._assetOverwrites[tokenId][assetId];
-        if (overwrites != uint64(0)) {
-            uint256 position = s._assetsPosition[tokenId][overwrites];
-            uint64 overwritesId = activeAssets[position];
+        uint64 toBeReplacedId = s._assetReplacements[tokenId][assetId];
+        if (toBeReplacedId != uint64(0)) {
+            uint256 position = s._assetsPosition[tokenId][toBeReplacedId];
+            uint64 targetId = activeAssets[position];
 
-            if (overwritesId == overwrites) {
+            if (targetId == toBeReplacedId) {
                 activeAssets[position] = assetId;
                 s._assetsPosition[tokenId][assetId] = position;
-                delete (s._tokenAssets[tokenId][overwrites]);
+                delete (s._tokenAssets[tokenId][toBeReplacedId]);
             } else {
-                // No `overwrites` exist, set `overwrites` to 0 to run a normal accept process.
-                overwrites = uint64(0);
+                // No `toBeReplacedId` exist, set `toBeReplacedId` to 0 to run a normal accept process.
+                toBeReplacedId = uint64(0);
             }
-            delete (s._assetOverwrites[tokenId][assetId]);
+            delete (s._assetReplacements[tokenId][assetId]);
         }
 
-        if (overwrites == uint64(0)) {
+        if (toBeReplacedId == uint64(0)) {
             activeAssets.push(assetId);
             s._activeAssetPriorities[tokenId].push(LOWEST_PRIORITY);
             s._assetsPosition[tokenId][assetId] =
@@ -195,15 +209,12 @@ abstract contract RMRKMultiAssetInternal is
                 1;
         }
 
-        emit AssetAccepted(tokenId, assetId, overwrites);
+        emit AssetAccepted(tokenId, assetId, toBeReplacedId);
 
         _afterAcceptAsset(tokenId, index, assetId);
     }
 
-    function _acceptAsset(uint256 tokenId, uint64 assetId)
-        internal
-        virtual
-    {
+    function _acceptAsset(uint256 tokenId, uint64 assetId) internal virtual {
         MultiAssetStorage.State storage s = getMRState();
 
         uint256 index = s._assetsPosition[tokenId][assetId];
@@ -245,7 +256,7 @@ abstract contract RMRKMultiAssetInternal is
 
         delete s._assetsPosition[tokenId][assetId];
 
-        delete (s._assetOverwrites[tokenId][assetId]);
+        delete (s._assetReplacements[tokenId][assetId]);
 
         pendingAssets.removeItemByIndex(index);
 
@@ -263,10 +274,7 @@ abstract contract RMRKMultiAssetInternal is
         _afterRejectAsset(tokenId, index, assetId);
     }
 
-    function _rejectAsset(uint256 tokenId, uint64 assetId)
-        internal
-        virtual
-    {
+    function _rejectAsset(uint256 tokenId, uint64 assetId) internal virtual {
         MultiAssetStorage.State storage s = getMRState();
 
         uint256 index = s._assetsPosition[tokenId][assetId];
@@ -296,15 +304,20 @@ abstract contract RMRKMultiAssetInternal is
         _rejectAsset(s, tokenId, index, assetId);
     }
 
-    function _rejectAllAssets(uint256 tokenId) internal virtual {
+    function _rejectAllAssets(uint256 tokenId, uint256 maxRejections)
+        internal
+        virtual
+    {
+        MultiAssetStorage.State storage s = getMRState();
+        uint256 len = s._pendingAssets[tokenId].length;
+
+        if (len > maxRejections) revert RMRKUnexpectedNumberOfAssets();
+
         _beforeRejectAllAssets(tokenId);
 
-        MultiAssetStorage.State storage s = getMRState();
-
-        uint256 len = s._pendingAssets[tokenId].length;
         for (uint256 i; i < len; ) {
             uint64 assetId = s._pendingAssets[tokenId][i];
-            delete s._assetOverwrites[tokenId][assetId];
+            delete s._assetReplacements[tokenId][assetId];
 
             unchecked {
                 ++i;
@@ -345,35 +358,32 @@ abstract contract RMRKMultiAssetInternal is
     function _addAssetToToken(
         uint256 tokenId,
         uint64 assetId,
-        uint64 overwrites
+        uint64 toBeReplacedId
     ) internal virtual {
         MultiAssetStorage.State storage s = getMRState();
 
-        if (s._tokenAssets[tokenId][assetId])
-            revert RMRKAssetAlreadyExists();
+        if (s._tokenAssets[tokenId][assetId]) revert RMRKAssetAlreadyExists();
 
         if (assetId == uint64(0)) revert RMRKAssetNotFoundInStorage();
 
         if (s._pendingAssets[tokenId].length >= 128)
             revert RMRKMaxPendingAssetsReached();
 
-        _beforeAddAssetToToken(tokenId, assetId, overwrites);
+        _beforeAddAssetToToken(tokenId, assetId, toBeReplacedId);
 
         s._tokenAssets[tokenId][assetId] = true;
 
-        s._assetsPosition[tokenId][assetId] = s
-            ._pendingAssets[tokenId]
-            .length;
+        s._assetsPosition[tokenId][assetId] = s._pendingAssets[tokenId].length;
 
         s._pendingAssets[tokenId].push(assetId);
 
-        if (overwrites != uint64(0)) {
-            s._assetOverwrites[tokenId][assetId] = overwrites;
+        if (toBeReplacedId != uint64(0)) {
+            s._assetReplacements[tokenId][assetId] = toBeReplacedId;
         }
 
-        emit AssetAddedToToken(tokenId, assetId, overwrites);
+        emit AssetAddedToToken(tokenId, assetId, toBeReplacedId);
 
-        _afterAddAssetToToken(tokenId, assetId, overwrites);
+        _afterAddAssetToToken(tokenId, assetId, toBeReplacedId);
     }
 
     function _getActiveAssets(uint256 tokenId)
@@ -403,13 +413,13 @@ abstract contract RMRKMultiAssetInternal is
         return getMRState()._activeAssetPriorities[tokenId];
     }
 
-    function _getAssetOverwrites(uint256 tokenId, uint64 assetId)
+    function _getAssetReplacements(uint256 tokenId, uint64 assetId)
         internal
         view
         virtual
         returns (uint64)
     {
-        return getMRState()._assetOverwrites[tokenId][assetId];
+        return getMRState()._assetReplacements[tokenId][assetId];
     }
 
     function _getApprovedForAssets(uint256 tokenId)
@@ -432,10 +442,7 @@ abstract contract RMRKMultiAssetInternal is
         return getMRState()._operatorApprovalsForAssets[owner][operator];
     }
 
-    function _approveForAssets(address to, uint256 tokenId)
-        internal
-        virtual
-    {
+    function _approveForAssets(address to, uint256 tokenId) internal virtual {
         getMRState()._tokenApprovalsForAssets[tokenId] = to;
         emit ApprovalForAssets(_ownerOf(tokenId), to, tokenId);
     }
@@ -479,10 +486,7 @@ abstract contract RMRKMultiAssetInternal is
         Asset[] memory assets = new Asset[](len);
         for (uint256 i; i < len; ) {
             uint64 id = assetIds[i];
-            assets[i] = Asset({
-                id: id,
-                metadataURI: _getAssetMetadata(id)
-            });
+            assets[i] = Asset({id: id, metadataURI: _getAssetMetadata(id)});
 
             unchecked {
                 ++i;
@@ -504,13 +508,13 @@ abstract contract RMRKMultiAssetInternal is
     function _beforeAddAssetToToken(
         uint256 tokenId,
         uint64 assetId,
-        uint64 overwrites
+        uint64 toBeReplacedId
     ) internal virtual {}
 
     function _afterAddAssetToToken(
         uint256 tokenId,
         uint64 assetId,
-        uint64 overwrites
+        uint64 toBeReplacedId
     ) internal virtual {}
 
     function _beforeAcceptAsset(

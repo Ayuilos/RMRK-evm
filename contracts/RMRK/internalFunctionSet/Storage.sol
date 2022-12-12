@@ -37,7 +37,7 @@ library MultiAssetStorage {
         // Mapping of uint64 Ids to asset object
         mapping(uint64 => string) _assets;
         // Mapping of tokenId to new asset, to asset to be replaced
-        mapping(uint256 => mapping(uint64 => uint64)) _assetOverwrites;
+        mapping(uint256 => mapping(uint64 => uint64)) _assetReplacements;
         // Mapping of tokenId to all assets
         mapping(uint256 => uint64[]) _activeAssets;
         // Mapping of tokenId to an array of asset priorities

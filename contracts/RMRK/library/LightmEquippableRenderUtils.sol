@@ -25,7 +25,7 @@ library LightmEquippableRenderUtils {
 
     struct PendingBaseRelatedAsset {
         uint64 id;
-        uint64 overwritesAssetWithId;
+        uint64 toBeReplacedId;
         address baseAddress;
         uint64 targetSlotId;
         address targetBaseAddress;
@@ -95,16 +95,16 @@ library LightmEquippableRenderUtils {
                 len
             );
         ILightmEquippable.BaseRelatedAsset memory baseRelatedAsset;
-        uint64 overwritesAssetWithId;
+        uint64 toBeReplacedId;
         for (uint256 i; i < len; ) {
             baseRelatedAsset = eTarget.getBaseRelatedAsset(assets[i]);
-            overwritesAssetWithId = maTarget.getAssetOverwrites(
+            toBeReplacedId = maTarget.getAssetReplacements(
                 tokenId,
                 assets[i]
             );
             pendingBaseRelatedAssets[i] = PendingBaseRelatedAsset({
                 id: assets[i],
-                overwritesAssetWithId: overwritesAssetWithId,
+                toBeReplacedId: toBeReplacedId,
                 baseAddress: baseRelatedAsset.baseAddress,
                 targetSlotId: baseRelatedAsset.targetSlotId,
                 targetBaseAddress: baseRelatedAsset.targetBaseAddress,

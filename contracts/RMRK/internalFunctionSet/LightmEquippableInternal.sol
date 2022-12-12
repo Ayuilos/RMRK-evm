@@ -587,16 +587,16 @@ abstract contract LightmEquippableInternal is
             uint64[] storage activeBaseRelatedAssets = es
                 ._activeBaseRelatedAssets[tokenId];
 
-            uint64 overwrites = mrs._assetOverwrites[tokenId][assetId];
+            uint64 toBeReplacedId = mrs._assetReplacements[tokenId][assetId];
 
-            if (overwrites != uint64(0)) {
+            if (toBeReplacedId != uint64(0)) {
                 uint256 position = es._activeBaseRelatedAssetsPosition[
                     tokenId
-                ][overwrites];
-                uint64 overwritesId = activeBaseRelatedAssets[position];
+                ][toBeReplacedId];
+                uint64 targetId = activeBaseRelatedAssets[position];
 
-                if (overwritesId == overwrites) {
-                    // Check if overwrites asset is participating equipment
+                if (targetId == toBeReplacedId) {
+                    // Check if toBeReplacedId asset is participating equipment
                     // If yes, should exit equipment first.
                     (address directOwner, , ) = _directOwnerOf(tokenId);
                     if (
@@ -609,7 +609,7 @@ abstract contract LightmEquippableInternal is
                             ILightmEquippable(directOwner).getSlotEquipment(
                                 address(this),
                                 tokenId,
-                                overwritesId
+                                toBeReplacedId
                             )
                         returns (ILightmEquippable.SlotEquipment memory) {
                             revert LightmMustRemoveSlotEquipmentFirst();
@@ -621,11 +621,11 @@ abstract contract LightmEquippableInternal is
                         assetId
                     ] = position;
                 } else {
-                    overwrites = uint64(0);
+                    toBeReplacedId = uint64(0);
                 }
             }
 
-            if (overwrites == uint64(0)) {
+            if (toBeReplacedId == uint64(0)) {
                 activeBaseRelatedAssets.push(assetId);
                 es._activeBaseRelatedAssetsPosition[tokenId][assetId] =
                     activeBaseRelatedAssets.length -

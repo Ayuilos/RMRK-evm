@@ -6,7 +6,7 @@ import {IERC165, IERC721, IERC721Metadata} from "@openzeppelin/contracts/token/E
 import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 import {IRMRKNestable, ILightmNestable} from "./interfaces/ILightmNestable.sol";
-import {IRMRKMultiAsset, ILightmMultiAsset} from "./interfaces/ILightmMultiAsset.sol";
+import {IRMRKMultiAsset, ILightmMultiAssetExtension} from "./interfaces/ILightmMultiAsset.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage} from "./internalFunctionSet/Storage.sol";
@@ -36,7 +36,7 @@ contract LightmInit {
         ds.supportedInterfaces[type(IRMRKNestable).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmNestable).interfaceId] = true;
         ds.supportedInterfaces[type(IRMRKMultiAsset).interfaceId] = true;
-        ds.supportedInterfaces[type(ILightmMultiAsset).interfaceId] = true;
+        ds.supportedInterfaces[type(ILightmMultiAssetExtension).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmEquippable).interfaceId] = true;
         ds.supportedInterfaces[
             type(IRMRKCollectionMetadata).interfaceId

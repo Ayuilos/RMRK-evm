@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import "../interfaces/IRMRKMultiAsset.sol";
-import "../interfaces/IRMRKMultiAssetRenderUtils.sol";
 
 pragma solidity ^0.8.15;
 
@@ -21,7 +20,7 @@ library RMRKMultiAssetRenderUtils {
 
     struct PendingAsset {
         uint64 id;
-        uint64 overwritesAssetWithId;
+        uint64 toBeReplacedId;
         string metadataURI;
     }
 
@@ -44,7 +43,7 @@ library RMRKMultiAssetRenderUtils {
         ActiveAsset[] memory activeAssets = new ActiveAsset[](len);
         string memory metadata;
         for (uint256 i; i < len; ) {
-            metadata = target_.getAssetMetadata(assets[i]);
+            metadata = target_.getAssetMetadata(tokenId, assets[i]);
             activeAssets[i] = ActiveAsset({
                 id: assets[i],
                 priority: priorities[i],
@@ -72,16 +71,16 @@ library RMRKMultiAssetRenderUtils {
 
         PendingAsset[] memory pendingAssets = new PendingAsset[](len);
         string memory metadata;
-        uint64 overwritesAssetWithId;
+        uint64 toBeReplacedId;
         for (uint256 i; i < len; ) {
-            metadata = target_.getAssetMetadata(assets[i]);
-            overwritesAssetWithId = target_.getAssetOverwrites(
+            metadata = target_.getAssetMetadata(tokenId, assets[i]);
+            toBeReplacedId = target_.getAssetReplacements(
                 tokenId,
                 assets[i]
             );
             pendingAssets[i] = PendingAsset({
                 id: assets[i],
-                overwritesAssetWithId: overwritesAssetWithId,
+                toBeReplacedId: toBeReplacedId,
                 metadataURI: metadata
             });
             unchecked {
@@ -100,13 +99,14 @@ library RMRKMultiAssetRenderUtils {
      */
     function getAssetsById(
         address target,
+        uint256 tokenId,
         uint64[] calldata assetIds
     ) public view returns (string[] memory) {
         IRMRKMultiAsset target_ = IRMRKMultiAsset(target);
         uint256 len = assetIds.length;
         string[] memory assets = new string[](len);
         for (uint256 i; i < len; ) {
-            assets[i] = target_.getAssetMetadata(assetIds[i]);
+            assets[i] = target_.getAssetMetadata(tokenId, assetIds[i]);
             unchecked {
                 ++i;
             }
@@ -144,6 +144,6 @@ library RMRKMultiAssetRenderUtils {
                 ++i;
             }
         }
-        return target_.getAssetMetadata(maxPriorityAsset);
+        return target_.getAssetMetadata(tokenId, maxPriorityAsset);
     }
 }

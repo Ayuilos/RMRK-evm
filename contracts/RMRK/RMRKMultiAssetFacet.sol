@@ -197,28 +197,28 @@ contract RMRKMultiAssetFacet is
 
     // ------------------------ RESOURCES ------------------------
 
-    function acceptAsset(uint256 tokenId, uint64 assetId)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    function acceptAsset(
+        uint256 tokenId,
+        uint256,
+        uint64 assetId
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _acceptAsset(tokenId, assetId);
     }
 
-    function rejectAsset(uint256 tokenId, uint64 assetId)
-        external
-        virtual
-        onlyApprovedForAssetsOrOwner(tokenId)
-    {
+    function rejectAsset(
+        uint256 tokenId,
+        uint256,
+        uint64 assetId
+    ) external virtual onlyApprovedForAssetsOrOwner(tokenId) {
         _rejectAsset(tokenId, assetId);
     }
 
-    function rejectAllAssets(uint256 tokenId)
+    function rejectAllAssets(uint256 tokenId, uint256 maxRejections)
         external
         virtual
         onlyApprovedForAssetsOrOwner(tokenId)
     {
-        _rejectAllAssets(tokenId);
+        _rejectAllAssets(tokenId, maxRejections);
     }
 
     function setPriority(uint256 tokenId, uint16[] memory priorities)
@@ -251,13 +251,13 @@ contract RMRKMultiAssetFacet is
         _setApprovalForAllForAssets(owner, operator, approved);
     }
 
-    function getAssetMetadata(uint64 assetId)
+    function getAssetMetadata(uint256 tokenId, uint64 assetId)
         public
         view
         virtual
         returns (string memory)
     {
-        return _getAssetMetadata(assetId);
+        return _getAssetMetadata(tokenId, assetId);
     }
 
     function getActiveAssets(uint256 tokenId)
@@ -287,13 +287,13 @@ contract RMRKMultiAssetFacet is
         return _getActiveAssetPriorities(tokenId);
     }
 
-    function getAssetOverwrites(uint256 tokenId, uint64 assetId)
+    function getAssetReplacements(uint256 tokenId, uint64 assetId)
         public
         view
         virtual
         returns (uint64)
     {
-        return _getAssetOverwrites(tokenId, assetId);
+        return _getAssetReplacements(tokenId, assetId);
     }
 
     function getApprovedForAssets(uint256 tokenId)
