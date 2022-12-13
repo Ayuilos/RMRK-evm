@@ -68,8 +68,8 @@ library MultiAssetStorage {
 
 library NestableStorage {
     struct State {
-        // Mapping from token ID to RMRKOwner struct
-        mapping(uint256 => IRMRKNestable.RMRKOwner) _RMRKOwners;
+        // Mapping from token ID to DirectOwner struct
+        mapping(uint256 => IRMRKNestable.DirectOwner) _DirectOwners;
         // Mapping of tokenId to array of active children structs
         mapping(uint256 => IRMRKNestable.Child[]) _activeChildren;
         // Mapping of tokenId to array of pending children structs

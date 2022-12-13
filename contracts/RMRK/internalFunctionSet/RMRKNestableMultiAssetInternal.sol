@@ -57,7 +57,8 @@ abstract contract RMRKNestableMultiAssetInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
 
         {
@@ -109,7 +110,7 @@ abstract contract RMRKNestableMultiAssetInternal is
             }
         }
         // Can't remove before burning child since child will call back to get root owner
-        delete ns._RMRKOwners[tokenId];
+        delete ns._DirectOwners[tokenId];
 
         _afterTokenTransfer(owner, address(0), tokenId);
         _afterNestedTokenTransfer(
@@ -117,7 +118,8 @@ abstract contract RMRKNestableMultiAssetInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
         emit Transfer(owner, address(0), tokenId);
         emit NestTransfer(immediateOwner, address(0), parentId, 0, tokenId);

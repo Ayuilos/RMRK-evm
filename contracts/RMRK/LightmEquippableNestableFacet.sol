@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.15;
 
+import {ILightmNestableExtension} from "./interfaces/ILightmNestable.sol";
 import "./RMRKNestableFacet.sol";
 import "./internalFunctionSet/LightmEquippableInternal.sol";
 
 contract LightmEquippableNestableFacet is
+    ILightmNestableExtension,
     RMRKNestableFacet,
     LightmEquippableInternal
 {
@@ -66,7 +68,35 @@ contract LightmEquippableNestableFacet is
         uint256 tokenId,
         uint256 destinationId
     ) public virtual {
-        nestTransferFrom(_msgSender(), to, tokenId, destinationId);
+        nestTransferFrom(_msgSender(), to, tokenId, destinationId, "");
+    }
+
+    function acceptChild(
+        uint256 tokenId,
+        address childContractAddress,
+        uint256 childTokenId
+    ) public virtual onlyApprovedOrOwner(tokenId) {
+        _acceptChild(tokenId, childContractAddress, childTokenId);
+    }
+
+    function transferChild(
+        uint256 tokenId,
+        address to,
+        uint256 destinationId,
+        address childContractAddress,
+        uint256 childTokenId,
+        bool isPending,
+        bytes memory data
+    ) public virtual onlyApprovedOrOwner(tokenId) {
+        _transferChild(
+            tokenId,
+            to,
+            destinationId,
+            childContractAddress,
+            childTokenId,
+            isPending,
+            data
+        );
     }
 
     function _burn(uint256 tokenId)
@@ -126,19 +156,23 @@ contract LightmEquippableNestableFacet is
         RMRKNestableMultiAssetInternal._transfer(from, to, tokenId);
     }
 
-    function _unnestChild(
+    function _transferChild(
         uint256 tokenId,
         address to,
+        uint256 destinationId,
         address childContractAddress,
         uint256 childTokenId,
-        bool isPending
+        bool isPending,
+        bytes memory data
     ) internal override(RMRKNestableInternal, LightmEquippableInternal) {
-        LightmEquippableInternal._unnestChild(
+        LightmEquippableInternal._transferChild(
             tokenId,
             to,
+            destinationId,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            data
         );
     }
 }

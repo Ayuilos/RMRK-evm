@@ -23,6 +23,7 @@ error RMRKNestableTransferToDescendant();
 error RMRKNestableTransferToNonRMRKNestableImplementer();
 error RMRKNestableTransferToSelf();
 error RMRKNotApprovedOrDirectOwner();
+error RMRKUnexpectedNumberOfChildren();
 error RMRKParentChildMismatch();
 error RMRKPendingChildIndexOutOfRange();
 
@@ -78,7 +79,7 @@ abstract contract RMRKNestableInternal is
             bool
         )
     {
-        RMRKOwner storage owner = getNestableState()._RMRKOwners[tokenId];
+        DirectOwner storage owner = getNestableState()._DirectOwners[tokenId];
         if (owner.ownerAddress == address(0)) revert ERC721InvalidTokenId();
 
         return (owner.ownerAddress, owner.tokenId, owner.isNft);
@@ -200,8 +201,9 @@ abstract contract RMRKNestableInternal is
                 isPending = true;
             }
         } else {
-            (address parentContract, , bool isNft) = IRMRKNestable(childContract)
-                .directOwnerOf(childTokenId);
+            (address parentContract, , bool isNft) = IRMRKNestable(
+                childContract
+            ).directOwnerOf(childTokenId);
 
             if (isNft && parentContract == address(this)) {
                 if (ns._activeChildren[tokenId].length > 0) {
@@ -235,7 +237,8 @@ abstract contract RMRKNestableInternal is
         address to,
         uint256 tokenId,
         bool isNft,
-        uint256 destinationId
+        uint256 destinationId,
+        bytes memory data
     ) internal {
         if (to == address(0)) revert ERC721MintToTheZeroAddress();
         if (_exists(tokenId)) revert ERC721TokenAlreadyMinted();
@@ -245,19 +248,27 @@ abstract contract RMRKNestableInternal is
         }
 
         _beforeTokenTransfer(address(0), to, tokenId);
+        _beforeNestedTokenTransfer(
+            address(0),
+            to,
+            0,
+            destinationId,
+            tokenId,
+            data
+        );
 
         getState()._balances[to] += 1;
 
         if (isNft) {
-            getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
+            getNestableState()._DirectOwners[tokenId] = DirectOwner({
                 ownerAddress: to,
                 tokenId: destinationId,
                 isNft: true
             });
 
-            _sendToNFT(address(0), to, 0, destinationId, tokenId);
+            _sendToNFT(address(0), to, 0, destinationId, tokenId, data);
         } else {
-            getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
+            getNestableState()._DirectOwners[tokenId] = DirectOwner({
                 ownerAddress: to,
                 tokenId: 0,
                 isNft: false
@@ -267,18 +278,35 @@ abstract contract RMRKNestableInternal is
         emit Transfer(address(0), to, tokenId);
 
         _afterTokenTransfer(address(0), to, tokenId);
+        _afterNestedTokenTransfer(
+            address(0),
+            to,
+            0,
+            destinationId,
+            tokenId,
+            data
+        );
     }
 
     function _mint(address to, uint256 tokenId) internal virtual override {
-        _mint(to, tokenId, false, 0);
+        _mint(to, tokenId, false, 0, "");
+    }
+
+    function _mint(
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal virtual {
+        _mint(to, tokenId, false, 0, data);
     }
 
     function _nestMint(
         address to,
         uint256 tokenId,
-        uint256 destinationId
+        uint256 destinationId,
+        bytes memory data
     ) internal virtual {
-        _mint(to, tokenId, true, destinationId);
+        _mint(to, tokenId, true, destinationId, data);
     }
 
     function _sendToNFT(
@@ -286,11 +314,12 @@ abstract contract RMRKNestableInternal is
         address to,
         uint256 fromTokenId,
         uint256 destinationId,
-        uint256 tokenId
+        uint256 tokenId,
+        bytes memory data
     ) private {
         IRMRKNestable destContract = IRMRKNestable(to);
 
-        destContract.addChild(destinationId, tokenId);
+        destContract.addChild(destinationId, tokenId, data);
         emit NestTransfer(from, to, fromTokenId, destinationId, tokenId);
     }
 
@@ -310,7 +339,8 @@ abstract contract RMRKNestableInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
 
         {
@@ -363,7 +393,7 @@ abstract contract RMRKNestableInternal is
             }
         }
         // Can't remove before burning child since child will call back to get root owner
-        delete ns._RMRKOwners[tokenId];
+        delete ns._DirectOwners[tokenId];
 
         _afterTokenTransfer(owner, address(0), tokenId);
         _afterNestedTokenTransfer(
@@ -371,7 +401,8 @@ abstract contract RMRKNestableInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
         emit Transfer(owner, address(0), tokenId);
         emit NestTransfer(immediateOwner, address(0), parentId, 0, tokenId);
@@ -386,16 +417,17 @@ abstract contract RMRKNestableInternal is
         address to,
         uint256 tokenId
     ) internal virtual override {
-        _transfer(from, to, tokenId, false, 0);
+        _transfer(from, to, tokenId, false, 0, "");
     }
 
     function _nestTransfer(
         address from,
         address to,
         uint256 tokenId,
-        uint256 destinationId
+        uint256 destinationId,
+        bytes memory data
     ) internal virtual {
-        _transfer(from, to, tokenId, true, destinationId);
+        _transfer(from, to, tokenId, true, destinationId, data);
     }
 
     function _transfer(
@@ -403,7 +435,8 @@ abstract contract RMRKNestableInternal is
         address to,
         uint256 tokenId,
         bool isNft,
-        uint256 destinationId
+        uint256 destinationId,
+        bytes memory data
     ) private {
         (address directOwner, uint256 fromTokenId, ) = _directOwnerOf(tokenId);
         if (directOwner != from) revert ERC721TransferFromIncorrectOwner();
@@ -419,15 +452,14 @@ abstract contract RMRKNestableInternal is
         }
 
         _beforeTokenTransfer(from, to, tokenId);
-        if (isNft) {
-            _beforeNestedTokenTransfer(
-                directOwner,
-                to,
-                fromTokenId,
-                destinationId,
-                tokenId
-            );
-        }
+        _beforeNestedTokenTransfer(
+            directOwner,
+            to,
+            fromTokenId,
+            destinationId,
+            tokenId,
+            data
+        );
 
         getState()._balances[from] -= 1;
         _updateOwnerAndClearApprovals(
@@ -438,10 +470,19 @@ abstract contract RMRKNestableInternal is
         );
         getState()._balances[to] += 1;
 
-        if (isNft) _sendToNFT(from, to, fromTokenId, destinationId, tokenId);
+        if (isNft)
+            _sendToNFT(from, to, fromTokenId, destinationId, tokenId, data);
 
         emit Transfer(from, to, tokenId);
         _afterTokenTransfer(from, to, tokenId);
+        _afterNestedTokenTransfer(
+            from,
+            to,
+            fromTokenId,
+            destinationId,
+            tokenId,
+            data
+        );
     }
 
     function _checkForInheritanceLoop(
@@ -479,7 +520,7 @@ abstract contract RMRKNestableInternal is
         address to,
         bool isNft
     ) internal {
-        getNestableState()._RMRKOwners[tokenId] = RMRKOwner({
+        getNestableState()._DirectOwners[tokenId] = DirectOwner({
             ownerAddress: to,
             tokenId: destinationId,
             isNft: isNft
@@ -500,14 +541,16 @@ abstract contract RMRKNestableInternal is
         returns (bool)
     {
         return
-            getNestableState()._RMRKOwners[tokenId].ownerAddress != address(0);
+            getNestableState()._DirectOwners[tokenId].ownerAddress !=
+            address(0);
     }
 
     // ------------------------ CHILD MANAGEMENT ------------------------
-    function _addChild(uint256 parentTokenId, uint256 childTokenId)
-        internal
-        virtual
-    {
+    function _addChild(
+        uint256 parentTokenId,
+        uint256 childTokenId,
+        bytes memory data
+    ) internal virtual {
         _requireMinted(parentTokenId);
 
         address childContractAddress = _msgSender();
@@ -520,7 +563,12 @@ abstract contract RMRKNestableInternal is
         );
         if (isDuplicate) revert RMRKDuplicateAdd();
 
-        _beforeAddChild(parentTokenId, childContractAddress, childTokenId);
+        _beforeAddChild(
+            parentTokenId,
+            childContractAddress,
+            childTokenId,
+            data
+        );
 
         IRMRKNestable childTokenContract = IRMRKNestable(childContractAddress);
         (address _parentContract, uint256 _parentTokenId, ) = childTokenContract
@@ -534,9 +582,14 @@ abstract contract RMRKNestableInternal is
         });
 
         _addChildToPending(parentTokenId, child);
-        emit ChildProposed(parentTokenId, child.contractAddress, child.tokenId);
+        emit ChildProposed(
+            parentTokenId,
+            getNestableState()._pendingChildren[parentTokenId].length,
+            child.contractAddress,
+            child.tokenId
+        );
 
-        _afterAddChild(parentTokenId, childContractAddress, childTokenId);
+        _afterAddChild(parentTokenId, childContractAddress, childTokenId, data);
     }
 
     function _acceptChild(
@@ -558,7 +611,7 @@ abstract contract RMRKNestableInternal is
             revert RMRKParentChildMismatch();
         }
 
-        _beforeAcceptChild(tokenId, childContractAddress, childTokenId);
+        _beforeAcceptChild(tokenId, index, childContractAddress, childTokenId);
 
         _removeItemByIndexAndUpdateLastChildIndex(
             s._pendingChildren[tokenId],
@@ -566,17 +619,24 @@ abstract contract RMRKNestableInternal is
         );
 
         _addChildToChildren(tokenId, child);
-        emit ChildAccepted(tokenId, child.contractAddress, child.tokenId);
+        emit ChildAccepted(
+            tokenId,
+            index,
+            child.contractAddress,
+            child.tokenId
+        );
 
-        _afterAcceptChild(tokenId, childContractAddress, childTokenId);
+        _afterAcceptChild(tokenId, index, childContractAddress, childTokenId);
     }
 
-    function _unnestChild(
+    function _transferChild(
         uint256 tokenId,
         address to,
+        uint256 destinationId,
         address childContractAddress,
         uint256 childTokenId,
-        bool isPending
+        bool isPending,
+        bytes memory data
     ) internal virtual {
         NestableStorage.State storage ns = getNestableState();
         uint256 index = ns._posInChildArray[childContractAddress][childTokenId];
@@ -596,36 +656,51 @@ abstract contract RMRKNestableInternal is
             revert RMRKParentChildMismatch();
         }
 
-        _beforeUnnestChild(
+        _beforeTransferChild(
             tokenId,
+            index,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            data
         );
 
         delete ns._posInChildArray[childContractAddress][childTokenId];
         _removeItemByIndexAndUpdateLastChildIndex(children, index);
 
         if (to != address(0)) {
-            IERC721(childContractAddress).safeTransferFrom(
-                address(this),
-                to,
-                childTokenId
-            );
+            if (destinationId == 0) {
+                IERC721(childContractAddress).safeTransferFrom(
+                    address(this),
+                    to,
+                    childTokenId
+                );
+            } else {
+                IRMRKNestable(child.contractAddress).nestTransferFrom(
+                    address(this),
+                    to,
+                    child.tokenId,
+                    destinationId,
+                    data
+                );
+            }
         }
 
-        emit ChildUnnested(
+        emit ChildTransferred(
             tokenId,
+            index,
             childContractAddress,
             childTokenId,
             isPending
         );
 
-        _afterUnnestChild(
+        _afterTransferChild(
             tokenId,
+            index,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            data
         );
     }
 
@@ -656,63 +731,229 @@ abstract contract RMRKNestableInternal is
         ns._activeChildren[tokenId].push(child);
     }
 
+    function _rejectAllChildren(uint256 tokenId, uint256 maxRejections)
+        internal
+    {
+        NestableStorage.State storage ns = getNestableState();
+        Child[] memory children = ns._pendingChildren[tokenId];
+
+        if (children.length > maxRejections) {
+            revert RMRKUnexpectedNumberOfChildren();
+        }
+
+        _beforeRejectAllChildren(tokenId);
+
+        for (uint256 i; i < ns._pendingChildren[tokenId].length; ) {
+            Child memory child = ns._pendingChildren[tokenId][i];
+            address childContract = child.contractAddress;
+            uint256 childTokenId = child.tokenId;
+
+            delete ns._posInChildArray[childContract][childTokenId];
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        delete getNestableState()._pendingChildren[tokenId];
+
+        emit AllChildrenRejected(tokenId);
+        _afterRejectAllChildren(tokenId);
+    }
+
     // ------------------------ HOOKS ------------------------
+    /**
+     * @notice Hook that is called before nested token transfer.
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param from Address from which the token is being transferred
+     * @param to Address to which the token is being transferred
+     * @param fromTokenId ID of the token from which the given token is being transferred
+     * @param toTokenId ID of the token to which the given token is being transferred
+     * @param tokenId ID of the token being transferred
+     * @param data Additional data with no specified format, sent in the addChild call
+     */
     function _beforeNestedTokenTransfer(
         address from,
         address to,
         uint256 fromTokenId,
         uint256 toTokenId,
-        uint256 tokenId
+        uint256 tokenId,
+        bytes memory data
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called after nested token transfer.
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param from Address from which the token was transferred
+     * @param to Address to which the token was transferred
+     * @param fromTokenId ID of the token from which the given token was transferred
+     * @param toTokenId ID of the token to which the given token was transferred
+     * @param tokenId ID of the token that was transferred
+     * @param data Additional data with no specified format, sent in the addChild call
+     */
     function _afterNestedTokenTransfer(
         address from,
         address to,
         uint256 fromTokenId,
         uint256 toTokenId,
-        uint256 tokenId
+        uint256 tokenId,
+        bytes memory data
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called before a child is added to the pending tokens array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that will receive a new pending child token
+     * @param childAddress Address of the collection smart contract of the child token expected to be located at the
+     *  specified index of the given parent token's pending children array
+     * @param childId ID of the child token expected to be located at the specified index of the given parent token's
+     *  pending children array
+     * @param data Additional data with no specified format
+     */
     function _beforeAddChild(
         uint256 tokenId,
-        address childContractAddress,
-        uint256 childTokenId
+        address childAddress,
+        uint256 childId,
+        bytes memory data
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called after a child is added to the pending tokens array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that has received a new pending child token
+     * @param childAddress Address of the collection smart contract of the child token expected to be located at the
+     *  specified index of the given parent token's pending children array
+     * @param childId ID of the child token expected to be located at the specified index of the given parent token's
+     *  pending children array
+     * @param data Additional data with no specified format
+     */
     function _afterAddChild(
         uint256 tokenId,
-        address childContractAddress,
-        uint256 childTokenId
+        address childAddress,
+        uint256 childId,
+        bytes memory data
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called before a child is accepted to the active tokens array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param parentId ID of the token that will accept a pending child token
+     * @param childIndex Index of the child token to accept in the given parent token's pending children array
+     * @param childAddress Address of the collection smart contract of the child token expected to be located at the
+     *  specified index of the given parent token's pending children array
+     * @param childId ID of the child token expected to be located at the specified index of the given parent token's
+     *  pending children array
+     */
     function _beforeAcceptChild(
-        uint256 tokenId,
-        address childContractAddress,
-        uint256 childTokenId
+        uint256 parentId,
+        uint256 childIndex,
+        address childAddress,
+        uint256 childId
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called after a child is accepted to the active tokens array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param parentId ID of the token that has accepted a pending child token
+     * @param childIndex Index of the child token that was accpeted in the given parent token's pending children array
+     * @param childAddress Address of the collection smart contract of the child token that was expected to be located
+     *  at the specified index of the given parent token's pending children array
+     * @param childId ID of the child token that was expected to be located at the specified index of the given parent
+     *  token's pending children array
+     */
     function _afterAcceptChild(
         uint256 parentId,
-        address childContractAddress,
-        uint256 childTokenId
+        uint256 childIndex,
+        address childAddress,
+        uint256 childId
     ) internal virtual {}
 
-    function _beforeUnnestChild(
+    /**
+     * @notice Hook that is called before a child is transferred from a given child token array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that will transfer a child token
+     * @param childIndex Index of the child token that will be transferred from the given parent token's children array
+     * @param childAddress Address of the collection smart contract of the child token that is expected to be located
+     *  at the specified index of the given parent token's children array
+     * @param childId ID of the child token that is expected to be located at the specified index of the given parent
+     *  token's children array
+     * @param isPending A boolean value signifying whether the child token is being transferred from the pending child
+     *  tokens array (`true`) or from the active child tokens array (`false`)
+     * @param data Additional data with no specified format, sent in the addChild call
+     */
+    function _beforeTransferChild(
         uint256 tokenId,
-        address childContractAddress,
-        uint256 childTokenId,
-        bool isPending
+        uint256 childIndex,
+        address childAddress,
+        uint256 childId,
+        bool isPending,
+        bytes memory data
     ) internal virtual {}
 
-    function _afterUnnestChild(
+    /**
+     * @notice Hook that is called after a child is transferred from a given child token array of a given token.
+     * @dev The Child struct consists of the following values:
+     *  [
+     *      tokenId,
+     *      contractAddress
+     *  ]
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that has transferred a child token
+     * @param childIndex Index of the child token that was transferred from the given parent token's children array
+     * @param childAddress Address of the collection smart contract of the child token that was expected to be located
+     *  at the specified index of the given parent token's children array
+     * @param childId ID of the child token that was expected to be located at the specified index of the given parent
+     *  token's children array
+     * @param isPending A boolean value signifying whether the child token was transferred from the pending child tokens
+     *  array (`true`) or from the active child tokens array (`false`)
+     * @param data Additional data with no specified format, sent in the addChild call
+     */
+    function _afterTransferChild(
         uint256 tokenId,
-        address childContractAddress,
-        uint256 childTokenId,
-        bool isPending
+        uint256 childIndex,
+        address childAddress,
+        uint256 childId,
+        bool isPending,
+        bytes memory data
     ) internal virtual {}
 
+    /**
+     * @notice Hook that is called before a pending child tokens array of a given token is cleared.
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that will reject all of the pending child tokens
+     */
     function _beforeRejectAllChildren(uint256 tokenId) internal virtual {}
 
+    /**
+     * @notice Hook that is called after a pending child tokens array of a given token is cleared.
+     * @dev To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     * @param tokenId ID of the token that has rejected all of the pending child tokens
+     */
     function _afterRejectAllChildren(uint256 tokenId) internal virtual {}
 
     // ------------------------ HELPERS ------------------------
