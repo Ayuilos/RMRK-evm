@@ -5,6 +5,7 @@ coverage.json
 typechain
 typechain-types
 temp
+.eslintrc.js
 .idea
 
 #Hardhat files

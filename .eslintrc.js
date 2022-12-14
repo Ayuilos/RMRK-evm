@@ -9,7 +9,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended', // Uses the recommended rules from the @typescript-eslint/eslint-plugin
     'standard',
     'plugin:prettier/recommended',
-    'plugin:node/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
