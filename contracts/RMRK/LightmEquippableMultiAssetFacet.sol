@@ -4,6 +4,7 @@
 
 pragma solidity ^0.8.15;
 
+import {ILightmMultiAssetExtension} from "./interfaces/ILightmMultiAsset.sol";
 import "./RMRKMultiAssetFacet.sol";
 import "./internalFunctionSet/LightmEquippableInternal.sol";
 
@@ -21,6 +22,7 @@ import "./internalFunctionSet/LightmEquippableInternal.sol";
  */
 
 contract LightmEquippableMultiAssetFacet is
+    ILightmMultiAssetExtension,
     LightmEquippableInternal,
     RMRKMultiAssetFacet
 {
@@ -31,6 +33,31 @@ contract LightmEquippableMultiAssetFacet is
     // No need to override `supportsInterface` here,
     // this contract is only used to be cut by Diamond
     // and Diamond loupe facet is responsible for IERC165
+
+    function acceptAsset(uint256 tokenId, uint64 assetId)
+        external
+        virtual
+        onlyApprovedForAssetsOrOwner(tokenId)
+    {
+        _acceptAsset(tokenId, assetId);
+    }
+
+    function rejectAsset(uint256 tokenId, uint64 assetId)
+        external
+        virtual
+        onlyApprovedForAssetsOrOwner(tokenId)
+    {
+        _rejectAsset(tokenId, assetId);
+    }
+
+    function getAssetMetadata(uint64 assetId)
+        public
+        view
+        virtual
+        returns (string memory)
+    {
+        return _getAssetMetadata(assetId);
+    }
 
     function getFullAssets(uint256 tokenId)
         external

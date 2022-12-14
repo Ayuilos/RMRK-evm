@@ -16,12 +16,12 @@ interface IRMRKMultiAssetEventsAndStruct {
      *  array.
      * @param tokenId ID of the token that received a new pending asset
      * @param assetId ID of the asset that has been added to the token's pending assets array
-     * @param overwritesId ID of the asset that would be overwritten
+     * @param replacedId ID of the asset that would be overwritten
      */
     event AssetAddedToToken(
         uint256 indexed tokenId,
         uint64 indexed assetId,
-        uint64 indexed overwritesId
+        uint64 indexed replacedId
     );
 
     /**
@@ -29,12 +29,12 @@ interface IRMRKMultiAssetEventsAndStruct {
      *  from token's pending assets array to active assets array of the token.
      * @param tokenId ID of the token that had a new asset accepted
      * @param assetId ID of the asset that was accepted
-     * @param overwritesId ID of the asset that would be overwritten
+     * @param replacedId ID of the asset that would be overwritten
      */
     event AssetAccepted(
         uint256 indexed tokenId,
         uint64 indexed assetId,
-        uint64 indexed overwritesId
+        uint64 indexed replacedId
     );
 
     /**
@@ -82,47 +82,57 @@ interface IRMRKMultiAssetEventsAndStruct {
 
 interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
     /**
-     * @notice Accepts a asset which id is `assetId` in pending array of `tokenId`.
-     * Migrates the asset from the token's pending asset array to the active asset array.
+     * @notice Accepts an asset at from the pending array of given token.
+     * @dev Migrates the asset from the token's pending asset array to the token's active asset array.
+     * @dev Active assets cannot be removed by anyone, but can be replaced by a new asset.
+     * @dev Requirements:
      *
-     * Active assets cannot be removed by anyone, but can be replaced by a new asset.
-     *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     * - `assetId` must exist.
-     *
-     * Emits an {AssetAccepted} event.
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - `index` must be in range of the length of the pending asset array.
+     * @dev Emits an {AssetAccepted} event.
+     * @param tokenId ID of the token for which to accept the pending asset
+     * @param index Index of the asset in the pending array to accept
+     * @param assetId ID of the asset expected to be in the index
      */
-    function acceptAsset(uint256 tokenId, uint64 assetId) external;
+    function acceptAsset(
+        uint256 tokenId,
+        uint256 index,
+        uint64 assetId
+    ) external;
 
     /**
-     * @notice Rejects a asset which id is `assetId` in pending array of `tokenId`.
-     * Removes the asset from the token's pending asset array.
+     * @notice Rejects an asset from the pending array of given token.
+     * @dev Removes the asset from the token's pending asset array.
+     * @dev Requirements:
      *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     * - `assetId` must exist.
-     *
-     * Emits a {AssetRejected} event.
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - `index` must be in range of the length of the pending asset array.
+     * @dev Emits a {AssetRejected} event.
+     * @param tokenId ID of the token that the asset is being rejected from
+     * @param index Index of the asset in the pending array to be rejected
+     * @param assetId ID of the asset expected to be in the index
      */
-    function rejectAsset(uint256 tokenId, uint64 assetId) external;
+    function rejectAsset(
+        uint256 tokenId,
+        uint256 index,
+        uint64 assetId
+    ) external;
 
     /**
-     * @notice Rejects all assets from the pending array of `tokenId`.
-     * Effecitvely deletes the array.
+     * @notice Rejects all assets from the pending array of a given token.
+     * @dev Effecitvely deletes the pending array.
+     * @dev Requirements:
      *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     *
-     * Emits a {AssetRejected} event with assetId = 0.
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     * @dev Emits a {AssetRejected} event with assetId = 0.
+     * @param tokenId ID of the token of which to clear the pending array.
+     * @param maxRejections Maximum number of expected assets to reject, used to prevent from rejecting assets which
+     *  arrive just before this operation.
      */
-    function rejectAllAssets(uint256 tokenId) external;
+    function rejectAllAssets(uint256 tokenId, uint256 maxRejections) external;
 
     /**
      * @notice Sets a new priority array on `tokenId`.
@@ -166,25 +176,30 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
         view
         returns (uint16[] memory);
 
-    //TODO: review definition
     /**
-     * @notice Returns the asset which will be overridden if assetId is accepted from
-     * a pending asset array on `tokenId`.
-     * Asset data is stored by reference, in order to access the data corresponding to the id, call `getAssetMeta(assetId)`
+     * @notice Used to retrieve the asset that will be replaced if a given asset from the token's pending array
+     *  is accepted.
+     * @dev Asset data is stored by reference, in order to access the data corresponding to the ID, call
+     *  `getAssetMetadata(tokenId, assetId)`.
+     * @param tokenId ID of the token to check
+     * @param newAssetId ID of the pending asset which will be accepted
+     * @return uint64 ID of the asset which will be replaced
      */
-    function getAssetOverwrites(uint256 tokenId, uint64 assetId)
+    function getAssetReplacements(uint256 tokenId, uint64 newAssetId)
         external
         view
         returns (uint64);
 
     /**
-     * @notice Returns raw bytes of `customAssetId` of `assetId`
-     * Raw bytes are stored by reference in a double mapping structure of `assetId` => `customAssetId`
-     *
-     * Custom data is intended to be stored as generic bytes and decode by various protocols on an as-needed basis
-     *
+     * @notice Used to fetch the asset metadata of the specified token's active asset with the given index.
+     * @dev Assets are stored by reference mapping `_assets[assetId]`.
+     * @dev Can be overriden to implement enumerate, fallback or other custom logic.
+     * @param tokenId ID of the token from which to retrieve the asset metadata
+     * @param assetId Asset Id, must be in the active assets array
+     * @return string The metadata of the asset belonging to the specified index in the token's active assets
+     *  array
      */
-    function getAssetMetadata(uint64 assetId)
+    function getAssetMetadata(uint256 tokenId, uint64 assetId)
         external
         view
         returns (string memory);

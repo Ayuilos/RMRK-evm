@@ -5,8 +5,8 @@ import {LibDiamond} from "./library/LibDiamond.sol";
 import {IERC165, IERC721, IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
-import {IRMRKNestable, ILightmNestable} from "./interfaces/ILightmNestable.sol";
-import {IRMRKMultiAsset, ILightmMultiAsset} from "./interfaces/ILightmMultiAsset.sol";
+import {IRMRKNestable, ILightmNestableExtension} from "./interfaces/ILightmNestable.sol";
+import {IRMRKMultiAsset, ILightmMultiAssetExtension} from "./interfaces/ILightmMultiAsset.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage} from "./internalFunctionSet/Storage.sol";
@@ -34,9 +34,13 @@ contract LightmInit {
         ds.supportedInterfaces[type(IERC721).interfaceId] = true;
         ds.supportedInterfaces[type(IERC721Metadata).interfaceId] = true;
         ds.supportedInterfaces[type(IRMRKNestable).interfaceId] = true;
-        ds.supportedInterfaces[type(ILightmNestable).interfaceId] = true;
+        ds.supportedInterfaces[
+            type(ILightmNestableExtension).interfaceId
+        ] = true;
         ds.supportedInterfaces[type(IRMRKMultiAsset).interfaceId] = true;
-        ds.supportedInterfaces[type(ILightmMultiAsset).interfaceId] = true;
+        ds.supportedInterfaces[
+            type(ILightmMultiAssetExtension).interfaceId
+        ] = true;
         ds.supportedInterfaces[type(ILightmEquippable).interfaceId] = true;
         ds.supportedInterfaces[
             type(IRMRKCollectionMetadata).interfaceId
@@ -55,8 +59,7 @@ contract LightmInit {
         s._name = _initStruct.name;
         s._symbol = _initStruct.symbol;
 
-        MultiAssetStorage.State storage mrs = MultiAssetStorage
-            .getState();
+        MultiAssetStorage.State storage mrs = MultiAssetStorage.getState();
         mrs._fallbackURI = _initStruct.fallbackURI;
 
         CollectionMetadataStorage.State storage cms = CollectionMetadataStorage

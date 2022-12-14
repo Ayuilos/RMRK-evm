@@ -206,9 +206,10 @@ contract RMRKNestableFacet is
         address from,
         address to,
         uint256 tokenId,
-        uint256 destinationId
+        uint256 destinationId,
+        bytes memory data
     ) public virtual onlyApprovedOrDirectOwner(tokenId) {
-        _nestTransfer(from, to, tokenId, destinationId);
+        _nestTransfer(from, to, tokenId, destinationId, data);
     }
 
     function safeTransferFrom(
@@ -235,11 +236,12 @@ contract RMRKNestableFacet is
      * @param parentTokenId is the tokenId of the parent token on (this).
      * @param childTokenId is the tokenId of the child instance
      */
-    function addChild(uint256 parentTokenId, uint256 childTokenId)
-        public
-        virtual
-    {
-        _addChild(parentTokenId, childTokenId);
+    function addChild(
+        uint256 parentTokenId,
+        uint256 childTokenId,
+        bytes memory data
+    ) public virtual {
+        _addChild(parentTokenId, childTokenId, data);
     }
 
     /**
@@ -247,6 +249,7 @@ contract RMRKNestableFacet is
      */
     function acceptChild(
         uint256 tokenId,
+        uint256, // We wanna support raw RMRK interface, but we will ignore this parameter in our own implementation
         address childContractAddress,
         uint256 childTokenId
     ) public virtual onlyApprovedOrOwner(tokenId) {
@@ -258,41 +261,32 @@ contract RMRKNestableFacet is
      * @dev This does not update the ownership storage data on children. If necessary, ownership
      * can be reclaimed by the rootOwner of the previous parent (this).
      */
-    function rejectAllChildren(uint256 tokenId)
+    function rejectAllChildren(uint256 tokenId, uint256 maxRejections)
         public
         virtual
         onlyApprovedOrOwner(tokenId)
     {
-        NestableStorage.State storage ns = getNestableState();
-        for (uint256 i; i < ns._pendingChildren[tokenId].length; ) {
-            Child memory child = ns._pendingChildren[tokenId][i];
-            address childContract = child.contractAddress;
-            uint256 childTokenId = child.tokenId;
-
-            delete ns._posInChildArray[childContract][childTokenId];
-
-            unchecked {
-                ++i;
-            }
-        }
-        delete getNestableState()._pendingChildren[tokenId];
-
-        emit AllChildrenRejected(tokenId);
+        _rejectAllChildren(tokenId, maxRejections);
     }
 
-    function unnestChild(
+    function transferChild(
         uint256 tokenId,
         address to,
+        uint256 destinationId,
+        uint256, // We wanna support raw RMRK interface, but we will ignore this parameter in our own implementation
         address childContractAddress,
         uint256 childTokenId,
-        bool isPending
+        bool isPending,
+        bytes memory data
     ) public virtual onlyApprovedOrOwner(tokenId) {
-        _unnestChild(
+        _transferChild(
             tokenId,
             to,
+            destinationId,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            data
         );
     }
 

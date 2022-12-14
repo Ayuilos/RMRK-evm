@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 
 import {IRMRKNestable} from "./IRMRKNestable.sol";
 
-interface ILightmNestable is IRMRKNestable {
+interface ILightmNestableExtension {
     function hasChild(
         uint256 tokenId,
         address childContract,
@@ -21,6 +21,22 @@ interface ILightmNestable is IRMRKNestable {
     function reclaimChild(
         uint256 tokenId,
         address childAddress,
+        uint256 childTokenId
+    ) external;
+
+    function transferChild(
+        uint256 tokenId,
+        address to,
+        uint256 destinationId,
+        address childContractAddress,
+        uint256 childTokenId,
+        bool isPending,
+        bytes memory data
+    ) external;
+
+    function acceptChild(
+        uint256 tokenId,
+        address childContractAddress,
         uint256 childTokenId
     ) external;
 

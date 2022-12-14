@@ -57,15 +57,14 @@ abstract contract LightmEquippableInternal is
         returns (BaseRelatedAsset[] memory)
     {
         uint256 len = baseRelatedAssetIds.length;
-        BaseRelatedAsset[]
-            memory baseRelatedAssets = new BaseRelatedAsset[](len);
+        BaseRelatedAsset[] memory baseRelatedAssets = new BaseRelatedAsset[](
+            len
+        );
 
         for (uint256 i; i < len; ) {
             uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
 
-            baseRelatedAssets[i] = _getBaseRelatedAsset(
-                baseRelatedAssetId
-            );
+            baseRelatedAssets[i] = _getBaseRelatedAsset(baseRelatedAssetId);
 
             unchecked {
                 ++i;
@@ -91,8 +90,7 @@ abstract contract LightmEquippableInternal is
         view
         returns (uint64[] memory allBaseRelatedAssetIds)
     {
-        allBaseRelatedAssetIds = getEquippableState()
-            ._allBaseRelatedAssetIds;
+        allBaseRelatedAssetIds = getEquippableState()._allBaseRelatedAssetIds;
     }
 
     //
@@ -141,8 +139,7 @@ abstract contract LightmEquippableInternal is
         if (
             slotEquipment.child.contractAddress != childContract ||
             slotEquipment.child.tokenId != childTokenId ||
-            slotEquipment.childBaseRelatedAssetId !=
-            childBaseRelatedAssetId
+            slotEquipment.childBaseRelatedAssetId != childBaseRelatedAssetId
         ) {
             revert LightmSlotEquipmentNotExist();
         }
@@ -335,8 +332,9 @@ abstract contract LightmEquippableInternal is
 
             // add the record to _equippeeChildBaseRelatedAssets
             es
-            ._equippedChildBaseRelatedAssets[childContract][childTokenId]
-                .push(sE.childBaseRelatedAssetId);
+            ._equippedChildBaseRelatedAssets[childContract][childTokenId].push(
+                    sE.childBaseRelatedAssetId
+                );
 
             // add the pointer which point at its position at
             // _equippedChildBaseRelatedAssets(recordIndex) and _slotEquipments(equipmentIndex)
@@ -428,9 +426,7 @@ abstract contract LightmEquippableInternal is
             }
 
             // delete corresponding _equipmentPointers record
-            delete es._equipmentPointers[tokenId][baseRelatedAssetId][
-                slotId
-            ];
+            delete es._equipmentPointers[tokenId][baseRelatedAssetId][slotId];
 
             // delete corresponding _childEquipmentPointers record
             delete es._childEquipmentPointers[
@@ -446,7 +442,9 @@ abstract contract LightmEquippableInternal is
                 uint256 lastIndex = slotEquipments.length - 1;
 
                 slotEquipment = slotEquipments[lastIndex];
-                slotEquipments[ePointer.equipmentIndex] = slotEquipments[lastIndex];
+                slotEquipments[ePointer.equipmentIndex] = slotEquipments[
+                    lastIndex
+                ];
 
                 slotEquipments.pop();
 
@@ -555,21 +553,25 @@ abstract contract LightmEquippableInternal is
         }
     }
 
-    function _unnestChild(
+    function _transferChild(
         uint256 tokenId,
         address to,
+        uint256 destinationId,
         address childContractAddress,
         uint256 childTokenId,
-        bool isPending
+        bool isPending,
+        bytes memory data
     ) internal virtual override {
         _childEquipmentCheck(childContractAddress, childTokenId);
 
-        RMRKNestableInternal._unnestChild(
+        RMRKNestableInternal._transferChild(
             tokenId,
             to,
+            destinationId,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            data
         );
     }
 
@@ -587,16 +589,16 @@ abstract contract LightmEquippableInternal is
             uint64[] storage activeBaseRelatedAssets = es
                 ._activeBaseRelatedAssets[tokenId];
 
-            uint64 overwrites = mrs._assetOverwrites[tokenId][assetId];
+            uint64 toBeReplacedId = mrs._assetReplacements[tokenId][assetId];
 
-            if (overwrites != uint64(0)) {
-                uint256 position = es._activeBaseRelatedAssetsPosition[
-                    tokenId
-                ][overwrites];
-                uint64 overwritesId = activeBaseRelatedAssets[position];
+            if (toBeReplacedId != uint64(0)) {
+                uint256 position = es._activeBaseRelatedAssetsPosition[tokenId][
+                    toBeReplacedId
+                ];
+                uint64 targetId = activeBaseRelatedAssets[position];
 
-                if (overwritesId == overwrites) {
-                    // Check if overwrites asset is participating equipment
+                if (targetId == toBeReplacedId) {
+                    // Check if toBeReplacedId asset is participating equipment
                     // If yes, should exit equipment first.
                     (address directOwner, , ) = _directOwnerOf(tokenId);
                     if (
@@ -609,7 +611,7 @@ abstract contract LightmEquippableInternal is
                             ILightmEquippable(directOwner).getSlotEquipment(
                                 address(this),
                                 tokenId,
-                                overwritesId
+                                toBeReplacedId
                             )
                         returns (ILightmEquippable.SlotEquipment memory) {
                             revert LightmMustRemoveSlotEquipmentFirst();
@@ -621,11 +623,11 @@ abstract contract LightmEquippableInternal is
                         assetId
                     ] = position;
                 } else {
-                    overwrites = uint64(0);
+                    toBeReplacedId = uint64(0);
                 }
             }
 
-            if (overwrites == uint64(0)) {
+            if (toBeReplacedId == uint64(0)) {
                 activeBaseRelatedAssets.push(assetId);
                 es._activeBaseRelatedAssetsPosition[tokenId][assetId] =
                     activeBaseRelatedAssets.length -
@@ -702,15 +704,16 @@ abstract contract LightmEquippableInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
-
 
         {
             EquippableStorage.State storage es = getEquippableState();
             // remove all corresponding slotEquipments
-            uint64[] memory baseRelatedAssetIds = es
-                ._activeBaseRelatedAssets[tokenId];
+            uint64[] memory baseRelatedAssetIds = es._activeBaseRelatedAssets[
+                tokenId
+            ];
             for (uint256 i; i < baseRelatedAssetIds.length; ) {
                 uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
                 uint64[] memory slotIds = es._equippedSlots[tokenId][
@@ -775,7 +778,7 @@ abstract contract LightmEquippableInternal is
             }
         }
         // Can't remove before burning child since child will call back to get root owner
-        delete ns._RMRKOwners[tokenId];
+        delete ns._DirectOwners[tokenId];
 
         _afterTokenTransfer(owner, address(0), tokenId);
         _afterNestedTokenTransfer(
@@ -783,7 +786,8 @@ abstract contract LightmEquippableInternal is
             address(0),
             parentId,
             0,
-            tokenId
+            tokenId,
+            ""
         );
         emit Transfer(owner, address(0), tokenId);
         emit NestTransfer(immediateOwner, address(0), parentId, 0, tokenId);

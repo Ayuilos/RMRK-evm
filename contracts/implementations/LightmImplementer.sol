@@ -54,8 +54,8 @@ contract LightmImpl is
     function addAssetToToken(
         uint256 tokenId,
         uint64 assetId,
-        uint64 overwrites
+        uint64 toBeReplacedId
     ) external onlyApprovedForAssetsOrOwner(tokenId) {
-        _addAssetToToken(tokenId, assetId, overwrites);
+        _addAssetToToken(tokenId, assetId, toBeReplacedId);
     }
 }

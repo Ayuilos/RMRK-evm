@@ -37,7 +37,7 @@ library MultiAssetStorage {
         // Mapping of uint64 Ids to asset object
         mapping(uint64 => string) _assets;
         // Mapping of tokenId to new asset, to asset to be replaced
-        mapping(uint256 => mapping(uint64 => uint64)) _assetOverwrites;
+        mapping(uint256 => mapping(uint64 => uint64)) _assetReplacements;
         // Mapping of tokenId to all assets
         mapping(uint256 => uint64[]) _activeAssets;
         // Mapping of tokenId to an array of asset priorities
@@ -68,8 +68,8 @@ library MultiAssetStorage {
 
 library NestableStorage {
     struct State {
-        // Mapping from token ID to RMRKOwner struct
-        mapping(uint256 => IRMRKNestable.RMRKOwner) _RMRKOwners;
+        // Mapping from token ID to DirectOwner struct
+        mapping(uint256 => IRMRKNestable.DirectOwner) _DirectOwners;
         // Mapping of tokenId to array of active children structs
         mapping(uint256 => IRMRKNestable.Child[]) _activeChildren;
         // Mapping of tokenId to array of pending children structs
