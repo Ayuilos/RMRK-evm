@@ -33,11 +33,18 @@ library LightmEquippableRenderUtils {
         string metadataURI;
     }
 
+    struct Origin {
+        address contractAddress;
+        uint256 tokenId;
+        uint64 assetId;
+    }
+
     struct ToBeRenderedPart {
         uint64 id;
         uint8 zIndex;
         address childAssetBaseAddress;
         string metadataURI;
+        Origin origin;
     }
 
     function getActiveBaseRelatedAssets(address target, uint256 tokenId)
@@ -98,10 +105,7 @@ library LightmEquippableRenderUtils {
         uint64 toBeReplacedId;
         for (uint256 i; i < len; ) {
             baseRelatedAsset = eTarget.getBaseRelatedAsset(assets[i]);
-            toBeReplacedId = maTarget.getAssetReplacements(
-                tokenId,
-                assets[i]
-            );
+            toBeReplacedId = maTarget.getAssetReplacements(tokenId, assets[i]);
             pendingBaseRelatedAssets[i] = PendingBaseRelatedAsset({
                 id: assets[i],
                 toBeReplacedId: toBeReplacedId,
@@ -212,14 +216,24 @@ library LightmEquippableRenderUtils {
                         ? childAssetBaseAddress
                         : address(0),
                     zIndex: part.z,
-                    metadataURI: childAsset.metadataURI
+                    metadataURI: childAsset.metadataURI,
+                    origin: Origin({
+                        contractAddress: equipment.child.contractAddress,
+                        tokenId: equipment.child.tokenId,
+                        assetId: equipment.childBaseRelatedAssetId
+                    })
                 });
             } else if (part.itemType == IRMRKBaseStorage.ItemType.Fixed) {
                 toBeRenderedParts[j] = ToBeRenderedPart({
                     id: partIds[i],
                     childAssetBaseAddress: address(0),
                     zIndex: part.z,
-                    metadataURI: part.metadataURI
+                    metadataURI: part.metadataURI,
+                    origin: Origin({
+                        contractAddress: address(0),
+                        tokenId: 0,
+                        assetId: uint64(0)
+                    })
                 });
             }
 
