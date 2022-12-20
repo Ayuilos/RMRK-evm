@@ -75,8 +75,9 @@ library LightmValidatorLib {
         );
 
         if (isValid) {
-            IRMRKNestable.Child[] memory children = IRMRKNestable(targetContract)
-                .childrenOf(tokenId);
+            IRMRKNestable.Child[] memory children = IRMRKNestable(
+                targetContract
+            ).childrenOf(tokenId);
             uint256 len = children.length;
             uint256 j;
 
@@ -178,7 +179,9 @@ library LightmValidatorLib {
         }
 
         ILightmEquippable.SlotEquipment[]
-            memory validSlotEquipments = new ILightmEquippable.SlotEquipment[](j);
+            memory validSlotEquipments = new ILightmEquippable.SlotEquipment[](
+                j
+            );
         validSlotEquipments = _validSlotEquipments;
 
         return _validSlotEquipments;
@@ -370,9 +373,7 @@ library LightmValidatorLib {
                 uint64[]
                     memory childActiveBaseRelatedAssetIds = ILightmEquippable(
                         slotEquipment.child.contractAddress
-                    ).getActiveBaseRelatedAssets(
-                            slotEquipment.child.tokenId
-                        );
+                    ).getActiveBaseRelatedAssets(slotEquipment.child.tokenId);
 
                 // The child token's `baseRelatedAssetId` has to be in child token's activeBaseRelatedAssetIds
                 if (
@@ -395,14 +396,6 @@ library LightmValidatorLib {
                         slotEquipment.child.contractAddress
                     ).getBaseRelatedAsset(
                             slotEquipment.childBaseRelatedAssetId
-                        );
-
-                ILightmEquippable.SlotEquipment
-                    memory realSlotEquipment = ILightmEquippable(targetContract)
-                        .getSlotEquipment(
-                            tokenId,
-                            baseRelatedAssetId,
-                            childBaseRelatedAsset.targetSlotId
                         );
 
                 // 1. The child's `targetBaseAddress` has to be `baseRelatedAsset.baseAddress`
@@ -435,17 +428,28 @@ library LightmValidatorLib {
                     return (false, "RV:TargetSlotRejected");
                 }
 
-                if (
-                    checkExistingData &&
-                    (realSlotEquipment.slotId != slotEquipment.slotId ||
-                        realSlotEquipment.childBaseRelatedAssetId !=
-                        slotEquipment.childBaseRelatedAssetId ||
-                        realSlotEquipment.child.contractAddress !=
-                        slotEquipment.child.contractAddress ||
-                        realSlotEquipment.child.tokenId !=
-                        slotEquipment.child.tokenId)
-                ) {
-                    return (false, "RV:SlotIsOccupiedMoreThanOne");
+                if (checkExistingData) {
+                    try
+                        ILightmEquippable(targetContract).getSlotEquipment(
+                            tokenId,
+                            baseRelatedAssetId,
+                            childBaseRelatedAsset.targetSlotId
+                        )
+                    returns (
+                        ILightmEquippable.SlotEquipment memory realSlotEquipment
+                    ) {
+                        if (
+                            realSlotEquipment.slotId != slotEquipment.slotId ||
+                            realSlotEquipment.childBaseRelatedAssetId !=
+                            slotEquipment.childBaseRelatedAssetId ||
+                            realSlotEquipment.child.contractAddress !=
+                            slotEquipment.child.contractAddress ||
+                            realSlotEquipment.child.tokenId !=
+                            slotEquipment.child.tokenId
+                        ) {
+                            return (false, "RV:SlotIsOccupiedMoreThanOne");
+                        }
+                    } catch (bytes memory) {}
                 }
             }
 

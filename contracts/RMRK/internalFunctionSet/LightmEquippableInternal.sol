@@ -275,9 +275,11 @@ abstract contract LightmEquippableInternal is
                     EquipmentPointer memory pointer = es._equipmentPointers[
                         tokenId
                     ][baseRelatedAssetId][sE.slotId];
-                    SlotEquipment memory existSE = es._slotEquipments[
-                        pointer.equipmentIndex
-                    ];
+                    SlotEquipment memory existSE;
+
+                    if (es._slotEquipments.length > 0) {
+                        existSE = es._slotEquipments[pointer.equipmentIndex];
+                    }
 
                     if (
                         existSE.slotId != uint64(0) ||
