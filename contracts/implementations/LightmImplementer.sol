@@ -20,7 +20,13 @@ contract LightmImpl is
         owner = getLightmImplState()._owner;
     }
 
-    function mint(address to, uint256 tokenId) public onlyOwner {
+    function mint(address to, uint256 tokenId) public {
+        uint256 s = getLightmImplState().mintStrategy;
+        if (s == 1) {
+            privateMintCheck();
+        } else if (s == 2) {
+            publicMintCheck();
+        }
         _safeMint(to, tokenId);
     }
 
