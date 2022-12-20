@@ -9,6 +9,7 @@ import {IRMRKNestable, ILightmNestableExtension} from "./interfaces/ILightmNesta
 import {IRMRKMultiAsset, ILightmMultiAssetExtension} from "./interfaces/ILightmMultiAsset.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
+import {ILightmImplementer} from "./interfaces/ILightmImplementer.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage} from "./internalFunctionSet/Storage.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
@@ -45,6 +46,7 @@ contract LightmInit {
         ds.supportedInterfaces[
             type(IRMRKCollectionMetadata).interfaceId
         ] = true;
+        ds.supportedInterfaces[type(ILightmImplementer).interfaceId] = true;
 
         // add your own state variables
         // EIP-2535 specifies that the `diamondCut` function takes two optional

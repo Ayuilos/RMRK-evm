@@ -6,9 +6,11 @@ import "../RMRK/library/LibDiamond.sol";
 import "../RMRK/internalFunctionSet/LightmEquippableInternal.sol";
 import "../RMRK/internalFunctionSet/RMRKCollectionMetadataInternal.sol";
 import "../RMRK/internalFunctionSet/LightmImplInternal.sol";
+import {ILightmImplementer} from "../RMRK/interfaces/ILightmImplementer.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
 contract LightmImpl is
+    ILightmImplementer,
     LightmEquippableInternal,
     RMRKCollectionMetadataInternal,
     LightmImplInternal,
