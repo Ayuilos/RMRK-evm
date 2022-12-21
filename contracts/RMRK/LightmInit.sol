@@ -22,6 +22,10 @@ contract LightmInit {
         string symbol;
         string fallbackURI;
         string collectionMetadataURI;
+        uint256 blockMintTime;
+        uint256 maxMintAmount;
+        uint256 mintPrice;
+        uint256 mintStrategy;
     }
 
     // You can add parameters to this function in order to pass in
@@ -56,6 +60,10 @@ contract LightmInit {
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
         LightmImplStorage.State storage lis = LightmImplStorage.getState();
         lis._owner = _owner;
+        lis.blockMintTime = _initStruct.blockMintTime;
+        lis.maxMintAmount = _initStruct.maxMintAmount;
+        lis.mintPrice = _initStruct.mintPrice;
+        lis.mintStrategy = _initStruct.mintStrategy;
 
         ERC721Storage.State storage s = ERC721Storage.getState();
         s._name = _initStruct.name;

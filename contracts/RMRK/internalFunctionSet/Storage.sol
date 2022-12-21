@@ -142,7 +142,12 @@ library CollectionMetadataStorage {
 library LightmImplStorage {
     struct State {
         address _owner;
+        uint256 blockMintTime;
+        uint256 maxMintAmount;
+        uint256 mintPrice;
+        uint256 mintStrategy;
     }
+
 
     bytes32 constant STORAGE_POSITION = keccak256("lightm.impl.storage");
 
