@@ -22,11 +22,11 @@ The `Full-automatic on-chain deployment` is a more appropriate approach for crea
 
 **Before you invoke the script below in a non-local development environment, make sure that no contract has been deployed on this chain(Check if `Create2Deployer` is deployed on target chain, its address is `0xcf2281070e6a50e4050694eef1a9a7376628d663`), otherwise this is a redundant action (except you wanna deploy your own custom factory)**.
 
-Go to [./scripts/deploy](./scripts/deploy_universal_factory.ts) to deploy universal factory and make NFT deployment happening tolly on chain.
+Run [./scripts/deploy_universal_factory.ts](./scripts/deploy_universal_factory.ts) to deploy universal factory and make NFT deployment happening tolly on chain.
 
 ### Semi-automatic deployment
 
-Go to [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable.ts) to deploy your own custom NFT.
+Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable.ts) to deploy your own custom NFT.
 
 | Contract                                                                                | Description                                                         | Can reuse |
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------- |
@@ -39,3 +39,4 @@ Go to [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippab
 | [RMRKCollectionMetadataFacet](./contracts/RMRK/RMRKCollectionMetadataFacet.sol)         | The collection-metadata part of RMRK NFT                            | yes       |
 | [Diamond](./contracts/RMRK/Diamond.sol)                                                 | The real contract that store all state                              | no        |
 | [LightmInit](./contracts/RMRK/LightmInit.sol)                                           | The diamond raw facet used to initializes the state of the contract | yes       |
+| [LightmImplementer](./contracts/implementations/LightmImplementer.sol)                  | The implementation used by `UniversalFactory` by default            | yes       |
