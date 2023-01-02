@@ -18,6 +18,9 @@ contract LightmEquippableNestableFacet is
     // this contract is only used to be cut by Diamond
     // and Diamond loupe facet is responsible for IERC165
 
+    /**
+     * @inheritdoc ILightmNestableExtension
+     */
     function hasChild(
         uint256 tokenId,
         address childContract,
@@ -34,6 +37,9 @@ contract LightmEquippableNestableFacet is
         return _hasChild(tokenId, childContract, childTokenId);
     }
 
+    /**
+     * @inheritdoc ILightmNestableExtension
+     */
     function reclaimChild(
         uint256 tokenId,
         address childAddress,
@@ -63,6 +69,9 @@ contract LightmEquippableNestableFacet is
         );
     }
 
+    /**
+     * @inheritdoc ILightmNestableExtension
+     */
     function nestTransfer(
         address to,
         uint256 tokenId,
@@ -71,6 +80,9 @@ contract LightmEquippableNestableFacet is
         nestTransferFrom(_msgSender(), to, tokenId, destinationId, "");
     }
 
+    /**
+     * @inheritdoc ILightmNestableExtension
+     */
     function acceptChild(
         uint256 tokenId,
         address childContractAddress,
@@ -79,6 +91,9 @@ contract LightmEquippableNestableFacet is
         _acceptChild(tokenId, childContractAddress, childTokenId);
     }
 
+    /**
+     * @inheritdoc ILightmNestableExtension
+     */
     function transferChild(
         uint256 tokenId,
         address to,

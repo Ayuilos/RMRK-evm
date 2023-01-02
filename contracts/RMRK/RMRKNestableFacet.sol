@@ -32,6 +32,9 @@ contract RMRKNestableFacet is
         s._symbol = symbol_;
     }
 
+    /**
+     * @inheritdoc IERC165
+     */
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -49,21 +52,21 @@ contract RMRKNestableFacet is
     // ------------------------ Metadata ------------------------
 
     /**
-     * @dev See {IERC721Metadata-name}.
+     * @inheritdoc IERC721Metadata
      */
     function name() public view virtual override returns (string memory) {
         return getState()._name;
     }
 
     /**
-     * @dev See {IERC721Metadata-symbol}.
+     * @inheritdoc IERC721Metadata
      */
     function symbol() public view virtual override returns (string memory) {
         return getState()._symbol;
     }
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @inheritdoc IERC721Metadata
      */
     function tokenURI(uint256 tokenId)
         public
@@ -77,6 +80,9 @@ contract RMRKNestableFacet is
 
     // ------------------------ Ownership ------------------------
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function ownerOf(uint256 tokenId)
         public
         view
@@ -88,10 +94,8 @@ contract RMRKNestableFacet is
     }
 
     /**
-    @dev Returns the immediate provenance data of the current RMRK NFT. In the event the NFT is owned
-    * by a wallet, tokenId will be zero and isNft will be false. Otherwise, the returned data is the
-    * contract address and tokenID of the owner NFT, as well as its isNft flag.
-    */
+     * @inheritdoc IRMRKNestable
+     */
     function directOwnerOf(uint256 tokenId)
         public
         view
@@ -106,7 +110,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev See {IERC721-balanceOf}.
+     * @inheritdoc IERC721
      */
     function balanceOf(address owner)
         public
@@ -119,7 +123,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev See {IERC721-approve}.
+     * @inheritdoc IERC721
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ownerOf(tokenId);
@@ -132,7 +136,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev See {IERC721-getApproved}.
+     * @inheritdoc IERC721
      */
     function getApproved(uint256 tokenId)
         public
@@ -145,7 +149,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev See {IERC721-setApprovalForAll}.
+     * @inheritdoc IERC721
      */
     function setApprovalForAll(address operator, bool approved)
         public
@@ -156,7 +160,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev See {IERC721-isApprovedForAll}.
+     * @inheritdoc IERC721
      */
     function isApprovedForAll(address owner, address operator)
         public
@@ -170,6 +174,11 @@ contract RMRKNestableFacet is
 
     // ------------------------ BURNING ------------------------
 
+    /**
+     * @notice Used to burn a given token.
+     * @dev In case the token has any child tokens, the execution will be reverted.
+     * @param tokenId ID of the token to burn
+     */
     function burn(uint256 tokenId)
         public
         virtual
@@ -179,6 +188,9 @@ contract RMRKNestableFacet is
         return _burn(tokenId, 0);
     }
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function burn(uint256 tokenId, uint256 maxRecursiveBurns)
         public
         virtual
@@ -190,10 +202,16 @@ contract RMRKNestableFacet is
 
     // ------------------------ TRANSFERING ------------------------
 
+    /**
+     * @dev This method is a shorthand of `transferFrom` with setting `from` to `msg.sender`
+     */
     function transfer(address to, uint256 tokenId) public virtual {
         transferFrom(_msgSender(), to, tokenId);
     }
 
+    /**
+     * @inheritdoc IERC721
+     */
     function transferFrom(
         address from,
         address to,
@@ -202,6 +220,9 @@ contract RMRKNestableFacet is
         _transfer(from, to, tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function nestTransferFrom(
         address from,
         address to,
@@ -212,6 +233,9 @@ contract RMRKNestableFacet is
         _nestTransfer(from, to, tokenId, destinationId, data);
     }
 
+    /**
+     * @inheritdoc IERC721
+     */
     function safeTransferFrom(
         address from,
         address to,
@@ -220,6 +244,9 @@ contract RMRKNestableFacet is
         safeTransferFrom(from, to, tokenId, "");
     }
 
+    /**
+     * @inheritdoc IERC721
+     */
     function safeTransferFrom(
         address from,
         address to,
@@ -232,9 +259,7 @@ contract RMRKNestableFacet is
     // ------------------------ CHILD MANAGEMENT PUBLIC ------------------------
 
     /**
-     * @dev Function designed to be used by other instances of RMRK-Core contracts to update children.
-     * @param parentTokenId is the tokenId of the parent token on (this).
-     * @param childTokenId is the tokenId of the child instance
+     * @inheritdoc IRMRKNestable
      */
     function addChild(
         uint256 parentTokenId,
@@ -245,7 +270,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @dev Sends an instance of Child from the pending children array at index to children array for tokenId.
+     * @inheritdoc IRMRKNestable
      */
     function acceptChild(
         uint256 tokenId,
@@ -257,9 +282,7 @@ contract RMRKNestableFacet is
     }
 
     /**
-     * @notice Deletes all pending children.
-     * @dev This does not update the ownership storage data on children. If necessary, ownership
-     * can be reclaimed by the rootOwner of the previous parent (this).
+     * @inheritdoc IRMRKNestable
      */
     function rejectAllChildren(uint256 tokenId, uint256 maxRejections)
         public
@@ -269,6 +292,9 @@ contract RMRKNestableFacet is
         _rejectAllChildren(tokenId, maxRejections);
     }
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function transferChild(
         uint256 tokenId,
         address to,
@@ -293,9 +319,8 @@ contract RMRKNestableFacet is
     // ------------------------ CHILD MANAGEMENT GETTERS ------------------------
 
     /**
-    @dev Returns all confirmed children
-    */
-
+     * @inheritdoc IRMRKNestable
+     */
     function childrenOf(uint256 parentTokenId)
         public
         view
@@ -305,9 +330,8 @@ contract RMRKNestableFacet is
     }
 
     /**
-    @dev Returns all pending children
-    */
-
+     * @inheritdoc IRMRKNestable
+     */
     function pendingChildrenOf(uint256 parentTokenId)
         public
         view
@@ -316,6 +340,9 @@ contract RMRKNestableFacet is
         return _pendingChildrenOf(parentTokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function childOf(uint256 parentTokenId, uint256 index)
         external
         view
@@ -324,6 +351,9 @@ contract RMRKNestableFacet is
         return _childOf(parentTokenId, index);
     }
 
+    /**
+     * @inheritdoc IRMRKNestable
+     */
     function pendingChildOf(uint256 parentTokenId, uint256 index)
         external
         view
