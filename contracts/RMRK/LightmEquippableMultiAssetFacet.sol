@@ -34,6 +34,9 @@ contract LightmEquippableMultiAssetFacet is
     // this contract is only used to be cut by Diamond
     // and Diamond loupe facet is responsible for IERC165
 
+    /**
+     * @inheritdoc ILightmMultiAssetExtension
+     */
     function acceptAsset(uint256 tokenId, uint64 assetId)
         external
         virtual
@@ -42,6 +45,9 @@ contract LightmEquippableMultiAssetFacet is
         _acceptAsset(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc ILightmMultiAssetExtension
+     */
     function rejectAsset(uint256 tokenId, uint64 assetId)
         external
         virtual
@@ -50,6 +56,9 @@ contract LightmEquippableMultiAssetFacet is
         _rejectAsset(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc ILightmMultiAssetExtension
+     */
     function getAssetMetadata(uint64 assetId)
         public
         view
@@ -59,6 +68,9 @@ contract LightmEquippableMultiAssetFacet is
         return _getAssetMetadata(assetId);
     }
 
+    /**
+     * @inheritdoc ILightmMultiAssetExtension
+     */
     function getFullAssets(uint256 tokenId)
         external
         view
@@ -68,6 +80,9 @@ contract LightmEquippableMultiAssetFacet is
         return _getFullAssets(tokenId);
     }
 
+    /**
+     * @inheritdoc ILightmMultiAssetExtension
+     */
     function getFullPendingAssets(uint256 tokenId)
         external
         view

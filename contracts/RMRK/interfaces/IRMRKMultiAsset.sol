@@ -135,24 +135,30 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
     function rejectAllAssets(uint256 tokenId, uint256 maxRejections) external;
 
     /**
-     * @notice Sets a new priority array on `tokenId`.
-     * The priority array is a non-sequential list of uint16s, where lowest uint64 is considered highest priority.
-     * `0` priority is a special case which is equibvalent to unitialized.
+     * @notice Sets a new priority array for a given token.
+     * @dev The priority array is a non-sequential list of `uint16`s, where the lowest value is considered highest
+     *  priority.
+     * @dev Value `0` of a priority is a special case equivalent to unitialized.
+     * @dev Requirements:
      *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     * - The length of `priorities` must be equal to the length of the active assets array.
-     *
-     * Emits a {AssetPrioritySet} event.
+     *  - The caller must own the token or be approved to manage the token's assets
+     *  - `tokenId` must exist.
+     *  - The length of `priorities` must be equal the length of the active assets array.
+     * @dev Emits a {AssetPrioritySet} event.
+     * @param tokenId ID of the token to set the priorities for
+     * @param priorities An array of priorities of active assets. The succesion of items in the priorities array
+     *  matches that of the succesion of items in the active array
      */
     function setPriority(uint256 tokenId, uint16[] calldata priorities)
         external;
 
     /**
-     * @notice Returns IDs of active assets of `tokenId`.
-     * Asset data is stored by reference, in order to access the data corresponding to the id, call `getAssetMeta(assetId)`
+     * @notice Used to retrieve IDs of the active assets of given token.
+     * @dev Asset data is stored by reference, in order to access the data corresponding to the ID, call
+     *  `getAssetMetadata(tokenId, assetId)`.
+     * @dev You can safely get 10k
+     * @param tokenId ID of the token to retrieve the IDs of the active assets
+     * @return uint64[] An array of active asset IDs of the given token
      */
     function getActiveAssets(uint256 tokenId)
         external
@@ -160,8 +166,11 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
         returns (uint64[] memory);
 
     /**
-     * @notice Returns IDs of pending assets of `tokenId`.
-     * Asset data is stored by reference, in order to access the data corresponding to the id, call `getAssetMeta(assetId)`
+     * @notice Used to retrieve IDs of the pending assets of given token.
+     * @dev Asset data is stored by reference, in order to access the data corresponding to the ID, call
+     *  `getAssetMetadata(tokenId, assetId)`.
+     * @param tokenId ID of the token to retrieve the IDs of the pending assets
+     * @return uint64[] An array of pending asset IDs of the given token
      */
     function getPendingAssets(uint256 tokenId)
         external
@@ -169,7 +178,11 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
         returns (uint64[] memory);
 
     /**
-     * @notice Returns priorities of active assets of `tokenId`.
+     * @notice Used to retrieve the priorities of the active resoources of a given token.
+     * @dev Asset priorities are a non-sequential array of uint16 values with an array size equal to active asset
+     *  priorites.
+     * @param tokenId ID of the token for which to retrieve the priorities of the active assets
+     * @return uint16[] An array of priorities of the active assets of the given token
      */
     function getActiveAssetPriorities(uint256 tokenId)
         external
@@ -204,28 +217,30 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
         view
         returns (string memory);
 
+    // Approvals
+
     /**
-     * @notice Gives permission to `to` to manage `tokenId` assets.
-     * This differs from transfer approvals, as approvals are not cleared when the approved
-     * party accepts or rejects a asset, or sets asset priorities. This approval is cleared on token transfer.
+     * @notice Used to grant permission to the user to manage token's assets.
+     * @dev This differs from transfer approvals, as approvals are not cleared when the approved party accepts or
+     *  rejects an asset, or sets asset priorities. This approval is cleared on token transfer.
+     * @dev Only a single account can be approved at a time, so approving the `0x0` address clears previous approvals.
+     * @dev Requirements:
      *
-     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
-     *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     *
-     * Emits an {ApprovalForAssets} event.
+     *  - The caller must own the token or be an approved operator.
+     *  - `tokenId` must exist.
+     * @dev Emits an {ApprovalForAssets} event.
+     * @param to Address of the account to grant the approval to
+     * @param tokenId ID of the token for which the approval to manage the assets is granted
      */
     function approveForAssets(address to, uint256 tokenId) external;
 
     /**
-     * @notice Returns the account approved to manage assets of `tokenId`.
+     * @notice Used to retrieve the address of the account approved to manage assets of a given token.
+     * @dev Requirements:
      *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
+     *  - `tokenId` must exist.
+     * @param tokenId ID of the token for which to retrieve the approved address
+     * @return address Address of the account that is approved to manage the specified token's assets
      */
     function getApprovedForAssets(uint256 tokenId)
         external
@@ -233,22 +248,26 @@ interface IRMRKMultiAsset is IERC165, IRMRKMultiAssetEventsAndStruct {
         returns (address);
 
     /**
-     * @dev Approve or remove `operator` as an operator of assets for the caller.
-     * Operators can call {acceptAsset}, {rejectAsset}, {rejectAllAssets} or {setPriority} for any token owned by the caller.
+     * @notice Used to add or remove an operator of assets for the caller.
+     * @dev Operators can call {acceptAsset}, {rejectAsset}, {rejectAllAssets} or {setPriority} for any token
+     *  owned by the caller.
+     * @dev Requirements:
      *
-     * Requirements:
-     *
-     * - The `operator` cannot be the caller.
-     *
-     * Emits an {ApprovalForAllForAssets} event.
+     *  - The `operator` cannot be the caller.
+     * @dev Emits an {ApprovalForAllForAssets} event.
+     * @param operator Address of the account to which the operator role is granted or revoked from
+     * @param approved The boolean value indicating whether the operator role is being granted (`true`) or revoked
+     *  (`false`)
      */
     function setApprovalForAllForAssets(address operator, bool approved)
         external;
 
     /**
-     * @notice Returns if the `operator` is allowed to manage all assets of `owner`.
-     *
-     * See {setApprovalForAllForAssets}
+     * @notice Used to check whether the address has been granted the operator role by a given address or not.
+     * @dev See {setApprovalForAllForAssets}.
+     * @param owner Address of the account that we are checking for whether it has granted the operator role
+     * @param operator Address of the account that we are checking whether it has the operator role or not
+     * @return bool The boolean value indicating wehter the account we are checking has been granted the operator role
      */
     function isApprovedForAllForAssets(address owner, address operator)
         external

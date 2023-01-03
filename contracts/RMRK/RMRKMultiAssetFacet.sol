@@ -60,19 +60,22 @@ contract RMRKMultiAssetFacet is
     // ------------------------ Metadata ------------------------
 
     /**
-     * @dev See {IERC721Metadata-name}.
+     * @inheritdoc IERC721Metadata
      */
     function name() public view virtual override returns (string memory) {
         return getState()._name;
     }
 
     /**
-     * @dev See {IERC721Metadata-symbol}.
+     * @inheritdoc IERC721Metadata
      */
     function symbol() public view virtual override returns (string memory) {
         return getState()._symbol;
     }
 
+    /**
+     * @inheritdoc IERC721Metadata
+     */
     function tokenURI(uint256 tokenId)
         public
         view
@@ -85,6 +88,9 @@ contract RMRKMultiAssetFacet is
 
     // ------------------------ Ownership ------------------------
 
+    /**
+     * @inheritdoc IERC721
+     */
     function ownerOf(uint256 tokenId)
         public
         view
@@ -96,7 +102,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-balanceOf}.
+     * @inheritdoc IERC721
      */
     function balanceOf(address owner)
         public
@@ -109,7 +115,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-approve}.
+     * @inheritdoc IERC721
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ownerOf(tokenId);
@@ -122,7 +128,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-getApproved}.
+     * @inheritdoc IERC721
      */
     function getApproved(uint256 tokenId)
         public
@@ -135,7 +141,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-setApprovalForAll}.
+     * @inheritdoc IERC721
      */
     function setApprovalForAll(address operator, bool approved)
         public
@@ -146,7 +152,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-isApprovedForAll}.
+     * @inheritdoc IERC721
      */
     function isApprovedForAll(address owner, address operator)
         public
@@ -159,7 +165,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-transferFrom}.
+     * @inheritdoc IERC721
      */
     function transferFrom(
         address from,
@@ -172,7 +178,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @inheritdoc IERC721
      */
     function safeTransferFrom(
         address from,
@@ -183,7 +189,7 @@ contract RMRKMultiAssetFacet is
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @inheritdoc IERC721
      */
     function safeTransferFrom(
         address from,
@@ -197,6 +203,9 @@ contract RMRKMultiAssetFacet is
 
     // ------------------------ RESOURCES ------------------------
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function acceptAsset(
         uint256 tokenId,
         uint256,
@@ -205,6 +214,9 @@ contract RMRKMultiAssetFacet is
         _acceptAsset(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function rejectAsset(
         uint256 tokenId,
         uint256,
@@ -213,6 +225,9 @@ contract RMRKMultiAssetFacet is
         _rejectAsset(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function rejectAllAssets(uint256 tokenId, uint256 maxRejections)
         external
         virtual
@@ -221,6 +236,9 @@ contract RMRKMultiAssetFacet is
         _rejectAllAssets(tokenId, maxRejections);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function setPriority(uint256 tokenId, uint16[] memory priorities)
         external
         virtual
@@ -229,6 +247,9 @@ contract RMRKMultiAssetFacet is
         _setPriority(tokenId, priorities);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function approveForAssets(address to, uint256 tokenId) external virtual {
         address owner = ownerOf(tokenId);
         if (to == owner) revert RMRKApprovalForAssetsToCurrentOwner();
@@ -241,6 +262,9 @@ contract RMRKMultiAssetFacet is
         _approveForAssets(to, tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function setApprovalForAllForAssets(address operator, bool approved)
         external
         virtual
@@ -251,6 +275,9 @@ contract RMRKMultiAssetFacet is
         _setApprovalForAllForAssets(owner, operator, approved);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getAssetMetadata(uint256 tokenId, uint64 assetId)
         public
         view
@@ -260,6 +287,9 @@ contract RMRKMultiAssetFacet is
         return _getAssetMetadata(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getActiveAssets(uint256 tokenId)
         public
         view
@@ -269,6 +299,9 @@ contract RMRKMultiAssetFacet is
         return _getActiveAssets(tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getPendingAssets(uint256 tokenId)
         public
         view
@@ -278,6 +311,9 @@ contract RMRKMultiAssetFacet is
         return _getPendingAssets(tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getActiveAssetPriorities(uint256 tokenId)
         public
         view
@@ -287,6 +323,9 @@ contract RMRKMultiAssetFacet is
         return _getActiveAssetPriorities(tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getAssetReplacements(uint256 tokenId, uint64 assetId)
         public
         view
@@ -296,6 +335,9 @@ contract RMRKMultiAssetFacet is
         return _getAssetReplacements(tokenId, assetId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function getApprovedForAssets(uint256 tokenId)
         public
         view
@@ -305,6 +347,9 @@ contract RMRKMultiAssetFacet is
         return _getApprovedForAssets(tokenId);
     }
 
+    /**
+     * @inheritdoc IRMRKMultiAsset
+     */
     function isApprovedForAllForAssets(address owner, address operator)
         public
         view

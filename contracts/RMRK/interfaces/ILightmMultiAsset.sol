@@ -11,36 +11,16 @@ interface ILightmMultiAssetEventsAndStruct {
     }
 }
 
-interface ILightmMultiAssetExtension is
-    ILightmMultiAssetEventsAndStruct
-{
+interface ILightmMultiAssetExtension is ILightmMultiAssetEventsAndStruct {
     /**
-     * @notice Accepts a asset which id is `assetId` in pending array of `tokenId`.
-     * Migrates the asset from the token's pending asset array to the active asset array.
-     *
-     * Active assets cannot be removed by anyone, but can be replaced by a new asset.
-     *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     * - `assetId` must exist.
-     *
-     * Emits an {AssetAccepted} event.
+     * @notice This method is a more intuitive interface for `IRMRKMultiAsset.acceptAsset` with no `childIndex`,
+     * @dev This will cost more gas, but it's more friendly to devs
      */
     function acceptAsset(uint256 tokenId, uint64 assetId) external;
 
     /**
-     * @notice Rejects a asset which id is `assetId` in pending array of `tokenId`.
-     * Removes the asset from the token's pending asset array.
-     *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     * - `assetId` must exist.
-     *
-     * Emits a {AssetRejected} event.
+     * @notice This method is a more intuitive interface for `IRMRKMultiAsset.rejectAsset` with no `childIndex`,
+     * @dev This will cost more gas, but it's more friendly to devs
      */
     function rejectAsset(uint256 tokenId, uint64 assetId) external;
 
@@ -56,11 +36,17 @@ interface ILightmMultiAssetExtension is
         view
         returns (string memory);
 
+    /**
+     * @notice This method not just return assetIds but also including metadataURI
+     */
     function getFullAssets(uint256 tokenId)
         external
         view
         returns (Asset[] memory);
 
+    /**
+     * @notice This method not just return assetIds but also including metadataURI
+     */
     function getFullPendingAssets(uint256 tokenId)
         external
         view
