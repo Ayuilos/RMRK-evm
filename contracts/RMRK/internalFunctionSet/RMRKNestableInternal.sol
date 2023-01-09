@@ -8,8 +8,6 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import {NestableStorage} from "./Storage.sol";
 
-import "hardhat/console.sol";
-
 error RMRKChildIndexOutOfRange();
 error RMRKDuplicateAdd();
 error RMRKInvalidChildReclaim();

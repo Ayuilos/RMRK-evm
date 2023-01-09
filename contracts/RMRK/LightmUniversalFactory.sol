@@ -17,8 +17,6 @@ import {LightmImpl} from "../implementations/LightmImplementer.sol";
 
 import "./interfaces/ILightmUniversalFactory.sol";
 
-import "hardhat/console.sol";
-
 contract LightmUniversalFactory is ILightmUniversalFactory {
     string private constant VERSION = "0.1.0-alpha";
 
