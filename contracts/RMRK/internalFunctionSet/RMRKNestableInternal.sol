@@ -665,8 +665,8 @@ abstract contract RMRKNestableInternal is
             data
         );
 
-        delete ns._posInChildArray[childContractAddress][childTokenId];
         _removeItemByIndexAndUpdateLastChildIndex(children, index);
+        delete ns._posInChildArray[childContractAddress][childTokenId];
 
         if (to != address(0)) {
             if (destinationId == 0) {
