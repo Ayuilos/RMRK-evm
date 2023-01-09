@@ -90,7 +90,7 @@ async function deploy() {
     symbol: 'TEST',
     fallbackURI: '',
     collectionMetadataURI: '',
-    blockMintTime: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    blockMintTime: Math.floor(Date.now() / 1000),
     mintPrice: ethers.utils.parseEther(`0`),
     maxMintAmount: 10,
     mintStrategy: 2,
