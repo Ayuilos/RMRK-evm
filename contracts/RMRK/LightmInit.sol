@@ -10,7 +10,8 @@ import {IRMRKMultiAsset, ILightmMultiAssetExtension} from "./interfaces/ILightmM
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ILightmImplementer} from "./interfaces/ILightmImplementer.sol";
-import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage} from "./internalFunctionSet/Storage.sol";
+import {ILightmMintModule} from "./interfaces/ILightmMintModule.sol";
+import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage, LightmMintModuleStorage} from "./internalFunctionSet/Storage.sol";
 
 // It is expected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
@@ -22,10 +23,7 @@ contract LightmInit {
         string symbol;
         string fallbackURI;
         string collectionMetadataURI;
-        uint256 blockMintTime;
-        uint256 maxMintAmount;
-        uint256 mintPrice;
-        uint256 mintStrategy;
+        ILightmMintModule.MintConfig mintConfig;
     }
 
     // You can add parameters to this function in order to pass in
@@ -51,6 +49,7 @@ contract LightmInit {
             type(IRMRKCollectionMetadata).interfaceId
         ] = true;
         ds.supportedInterfaces[type(ILightmImplementer).interfaceId] = true;
+        ds.supportedInterfaces[type(ILightmMintModule).interfaceId] = true;
 
         // add your own state variables
         // EIP-2535 specifies that the `diamondCut` function takes two optional
@@ -60,10 +59,10 @@ contract LightmInit {
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
         LightmImplStorage.State storage lis = LightmImplStorage.getState();
         lis._owner = _owner;
-        lis.blockMintTime = _initStruct.blockMintTime;
-        lis.maxMintAmount = _initStruct.maxMintAmount;
-        lis.mintPrice = _initStruct.mintPrice;
-        lis.mintStrategy = _initStruct.mintStrategy;
+
+        LightmMintModuleStorage.State storage mms = LightmMintModuleStorage
+            .getState();
+        mms.config = _initStruct.mintConfig;
 
         ERC721Storage.State storage s = ERC721Storage.getState();
         s._name = _initStruct.name;

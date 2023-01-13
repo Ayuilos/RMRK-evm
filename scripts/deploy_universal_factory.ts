@@ -20,7 +20,7 @@ export default async function deployUniversalFactory(
 
   const constructorParams = ethers.utils.defaultAbiCoder.encode(
     [
-      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address equippableRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
+      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address equippableRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,address mintModuleAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
     ],
     [constructParams],
   );
@@ -79,6 +79,7 @@ async function deploy() {
     equippableFacetAddress: cut[3].facetAddress,
     implContractAddress: cut[4].facetAddress,
     collectionMetadataFacetAddress: cut[5].facetAddress,
+    mintModuleAddress: cut[6].facetAddress,
     initContractAddress: lightmInitAddress,
     cuts: cut,
   });
@@ -90,10 +91,14 @@ async function deploy() {
     symbol: 'TEST',
     fallbackURI: '',
     collectionMetadataURI: '',
-    blockMintTime: Math.floor(Date.now() / 1000),
-    mintPrice: ethers.utils.parseEther(`0`),
-    maxMintAmount: 10,
-    mintStrategy: 2,
+    mintConfig: {
+      whitelistMintPrice: ethers.utils.parseEther('0.1'),
+      publicMintPrice: ethers.utils.parseEther('0.15'),
+      whitelistMintLimit: 1,
+      publicMintLimit: 2,
+      // 0 -> linear, 1 -> assignable
+      mintStyle: 1,
+    },
   });
   const txRec = await tx.wait();
   const { events } = txRec;

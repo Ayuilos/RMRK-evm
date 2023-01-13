@@ -6,10 +6,6 @@ import "./ILightmEquippable.sol";
 interface ILightmImplementer {
     function getCollectionOwner() external view returns (address owner);
 
-    function mint(address to, uint256 tokenId) external payable;
-
-    function getMintPrice() external view returns (uint256);
-
     function setCollectionMetadata(string calldata newMetadata) external;
 
     function setFallbackURI(string calldata fallbackURI) external;

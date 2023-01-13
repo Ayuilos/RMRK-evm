@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../interfaces/IRMRKMultiAsset.sol";
 import "../interfaces/IRMRKNestable.sol";
 import "../interfaces/ILightmEquippable.sol";
+import "../interfaces/ILightmMintModule.sol";
 
 library ERC721Storage {
     struct State {
@@ -142,14 +143,30 @@ library CollectionMetadataStorage {
 library LightmImplStorage {
     struct State {
         address _owner;
-        uint256 blockMintTime;
-        uint256 maxMintAmount;
-        uint256 mintPrice;
-        uint256 mintStrategy;
     }
 
-
     bytes32 constant STORAGE_POSITION = keccak256("lightm.impl.storage");
+
+    function getState() internal pure returns (State storage s) {
+        bytes32 position = STORAGE_POSITION;
+        assembly {
+            s.slot := position
+        }
+    }
+}
+
+library LightmMintModuleStorage {
+    struct State {
+        ILightmMintModule.MintConfig config;
+        bytes32 whitelistMerkleProofRoot;
+        uint256 totalSupply;
+        bool allowPublicMint;
+        bool allowWhitelistMint;
+        mapping(address => uint64) publicMintedTokenCount;
+        mapping(address => uint64) whitelistMintedTokenCount;
+    }
+
+    bytes32 constant STORAGE_POSITION = keccak256("lightm.mint.module.storage");
 
     function getState() internal pure returns (State storage s) {
         bytes32 position = STORAGE_POSITION;

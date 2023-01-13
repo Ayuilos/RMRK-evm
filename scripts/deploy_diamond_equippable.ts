@@ -188,6 +188,7 @@ export async function oneTimeDeploy(
     'LightmEquippableNestableFacet',
     'LightmEquippableFacet',
     'RMRKCollectionMetadataFacet',
+    'LightmMintModuleImplementer',
     'LightmImpl',
   ];
 
@@ -390,11 +391,26 @@ export async function deployDiamondAndCutFacet(
 
   const diamondCut = await ethers.getContractAt('IDiamondCut', diamond.address);
 
-  // Write down your own token's name & symbol & fallbackURI below
-  const nameAndSymbolAndFallbackURI = [['Test', 'TEST', '']];
+  // Write down your own token's name & symbol & fallbackURI & collectionMetadataURI & mintConfig below
+  const initStruct = [
+    [
+      'Test',
+      'TEST',
+      '',
+      '',
+      {
+        whitelistMintPrice: ethers.utils.parseEther('0.1'),
+        publicMintPrice: ethers.utils.parseEther('0.15'),
+        whitelistMintLimit: 1,
+        publicMintLimit: 2,
+        // 0 -> linear, 1 -> assignable
+        mintStyle: 1,
+      },
+    ],
+  ];
 
   // call to init function
-  const functionCall = LightmInit.interface.encodeFunctionData('init', nameAndSymbolAndFallbackURI);
+  const functionCall = LightmInit.interface.encodeFunctionData('init', initStruct);
   const tx = await diamondCut.diamondCut(cut, lightmInitAddress, functionCall);
   console.log('Diamond cut tx: ', tx.hash);
   const receipt = await tx.wait();

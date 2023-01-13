@@ -18,6 +18,7 @@ interface ILightmUniversalFactory {
         address collectionMetadataFacetAddress;
         address initContractAddress;
         address implContractAddress;
+        address mintModuleAddress;
         IDiamondCut.FacetCut[] cuts;
     }
 
@@ -46,4 +47,6 @@ interface ILightmUniversalFactory {
     function initContractAddress() external view returns (address);
 
     function implContractAddress() external view returns (address);
+
+    function mintModuleAddress() external view returns (address);
 }

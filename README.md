@@ -28,15 +28,29 @@ Run [./scripts/deploy_universal_factory.ts](./scripts/deploy_universal_factory.t
 
 Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable.ts) to deploy your own custom NFT.
 
-| Contract                                                                                | Description                                                         | Can reuse |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------- |
-| [Create2Deployer](./contracts/RMRK/Create2Deployer.sol)                                 | A create2 contract deployer                                         | yes       |
-| [DiamondCutFacet](./contracts/RMRK/DiamondCutFacet.sol)                                 | The diamond raw facet used to add/remove/replace facet of diamond   | yes       |
-| [DiamondLoupeFacet](./contracts/RMRK/DiamondLoupeFacet.sol)                             | The diamond raw facet used to explore facets of diamond             | yes       |
-| [LightmEquippableNestableFacet](./contracts/RMRK/LightmEquippableNestableFacet.sol)     | The nestable part of equipment function supported facet             | yes       |
-| [LightmEquippableMultiAssetFacet](./contracts/RMRK/LightmEquippableMultiAssetFacet.sol) | The multi-asset part of equipment function supported facet          | yes       |
-| [LightmEquippableFacet](./contracts/RMRK/LightmEquippableFacet.sol)                     | The equippable part of equipment function supported facet           | yes       |
-| [RMRKCollectionMetadataFacet](./contracts/RMRK/RMRKCollectionMetadataFacet.sol)         | The collection-metadata part of RMRK NFT                            | yes       |
-| [Diamond](./contracts/RMRK/Diamond.sol)                                                 | The real contract that store all state                              | no        |
-| [LightmInit](./contracts/RMRK/LightmInit.sol)                                           | The diamond raw facet used to initializes the state of the contract | yes       |
-| [LightmImplementer](./contracts/implementations/LightmImplementer.sol)                  | The implementation used by `UniversalFactory` by default            | yes       |
+| Contract                                                                                   | Description                                                         | Can reuse |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | --------- |
+| [Create2Deployer](./contracts/RMRK/Create2Deployer.sol)                                    | A create2 contract deployer                                         | yes       |
+| [DiamondCutFacet](./contracts/RMRK/DiamondCutFacet.sol)                                    | The diamond raw facet used to add/remove/replace facet of diamond   | yes       |
+| [DiamondLoupeFacet](./contracts/RMRK/DiamondLoupeFacet.sol)                                | The diamond raw facet used to explore facets of diamond             | yes       |
+| [LightmEquippableNestableFacet](./contracts/RMRK/LightmEquippableNestableFacet.sol)        | The nestable part of equipment function supported facet             | yes       |
+| [LightmEquippableMultiAssetFacet](./contracts/RMRK/LightmEquippableMultiAssetFacet.sol)    | The multi-asset part of equipment function supported facet          | yes       |
+| [LightmEquippableFacet](./contracts/RMRK/LightmEquippableFacet.sol)                        | The equippable part of equipment function supported facet           | yes       |
+| [RMRKCollectionMetadataFacet](./contracts/RMRK/RMRKCollectionMetadataFacet.sol)            | The collection-metadata part of RMRK NFT                            | yes       |
+| [Diamond](./contracts/RMRK/Diamond.sol)                                                    | The real contract that store all state                              | no        |
+| [LightmInit](./contracts/RMRK/LightmInit.sol)                                              | The diamond raw facet used to initializes the state of the contract | yes       |
+| [LightmImplementer](./contracts/implementations/LightmImplementer.sol)                     | The implementation used by `UniversalFactory` by default            | yes       |
+| [LightmMintModuleImplementer](./contracts/implementations/LightmMintModuleImplementer.sol) | The isolated mint module, be used by `UniversalFactory` by default  | true      |
+
+#### More about mint module
+- You could choose how to mint token:
+  - linear (for example: from 1 -> 9999, can not specify an id)
+  - assignable (can specify an id)
+- Support "whitelist" by default, which is implemented by merkle tree proof:
+  - public mint
+    - easily start or stop minting at any time
+    - set mint limit **only when deploying**
+    - set mint price **only when deploying**
+  - whitelist mint
+    - same with public mint...
+    - target address assignable (due to the implementation of whitelist, if you're willing, you could pay for your whitelist friend)

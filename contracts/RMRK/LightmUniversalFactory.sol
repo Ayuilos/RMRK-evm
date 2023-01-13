@@ -31,6 +31,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
     address private immutable _collectionMetadataFacetAddress;
     address private immutable _initContractAddress;
     address private immutable _implContractAddress;
+    address private immutable _mintModuleAddress;
 
     IDiamondCut.FacetCut[] private _cuts;
 
@@ -46,6 +47,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         _collectionMetadataFacetAddress = params.collectionMetadataFacetAddress;
         _initContractAddress = params.initContractAddress;
         _implContractAddress = params.implContractAddress;
+        _mintModuleAddress = params.mintModuleAddress;
 
         IDiamondCut.FacetCut[] memory facetCuts = params.cuts;
         for (uint256 i; i < facetCuts.length; ) {
@@ -100,6 +102,10 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     function implContractAddress() external view returns (address) {
         return _implContractAddress;
+    }
+
+    function mintModuleAddress() external view returns (address) {
+        return _mintModuleAddress;
     }
 
     function deployCollection(LightmInit.InitStruct calldata initStruct)

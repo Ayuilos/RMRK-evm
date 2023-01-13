@@ -20,20 +20,6 @@ contract LightmImpl is
         owner = getLightmImplState()._owner;
     }
 
-    function mint(address to, uint256 tokenId) public payable {
-        uint256 s = getLightmImplState().mintStrategy;
-        if (s == 1) {
-            privateMintCheck();
-        } else if (s == 2) {
-            publicMintCheck();
-        }
-        _safeMint(to, tokenId);
-    }
-
-    function getMintPrice() public view returns (uint256) {
-        return getLightmImplState().mintPrice;
-    }
-
     function setCollectionMetadata(string calldata newMetadata)
         external
         onlyOwner
