@@ -10,9 +10,9 @@ interface ILightmImplementer {
 
     function setFallbackURI(string calldata fallbackURI) external;
 
-    function addBaseRelatedAssetEntry(
+    function addCatalogRelatedAssetEntry(
         uint64 id,
-        ILightmEquippable.BaseRelatedData calldata baseRelatedAssetData,
+        ILightmEquippable.CatalogRelatedData calldata catalogRelatedAssetData,
         string memory metadataURI
     ) external;
 

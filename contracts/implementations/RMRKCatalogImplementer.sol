@@ -3,21 +3,21 @@
 pragma solidity ^0.8.15;
 
 import "../RMRK/access/OwnableLock.sol";
-import "../RMRK/RMRKBaseStorage.sol";
+import "../RMRK/RMRKCatalog.sol";
 
 /**
- * @dev Contract for storing 'base' elements of NFTs to be accessed
+ * @dev Contract for storing 'catalog' elements of NFTs to be accessed
  * by instances of RMRKAsset implementing contracts. This default
  * implementation includes an OwnableLock dependency, which allows
- * the deployer to freeze the state of the base contract.
+ * the deployer to freeze the state of the catalog contract.
  *
- * In addition, this implementation treats the base registry as an
+ * In addition, this implementation treats the catalog registry as an
  * append-only ledger, so
  */
 
-contract RMRKBaseStorageImpl is OwnableLock, RMRKBaseStorage {
+contract RMRKCatalogImplementer is OwnableLock, RMRKCatalog {
     constructor(string memory metadataURI, string memory type_)
-        RMRKBaseStorage(metadataURI, type_)
+        RMRKCatalog(metadataURI, type_)
     {}
 
     function addPart(IntakeStruct calldata intakeStruct)

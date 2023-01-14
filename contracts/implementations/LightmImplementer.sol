@@ -31,12 +31,12 @@ contract LightmImpl is
         _setFallbackURI(fallbackURI);
     }
 
-    function addBaseRelatedAssetEntry(
+    function addCatalogRelatedAssetEntry(
         uint64 id,
-        BaseRelatedData calldata baseRelatedAssetData,
+        CatalogRelatedData calldata catalogRelatedAssetData,
         string memory metadataURI
     ) external onlyOwner {
-        _addBaseRelatedAssetEntry(id, baseRelatedAssetData, metadataURI);
+        _addCatalogRelatedAssetEntry(id, catalogRelatedAssetData, metadataURI);
     }
 
     function addAssetEntry(uint64 id, string memory metadataURI)

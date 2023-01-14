@@ -5,11 +5,11 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
- * @title IRMRKBaseStorage
+ * @title IRMRKCatalog
  * @author RMRK team
- * @notice An interface Base storage for RMRK equippable module.
+ * @notice An interface Catalog for RMRK equippable module.
  */
-interface IRMRKBaseStorage is IERC165 {
+interface IRMRKCatalog is IERC165 {
     /**
      * @notice Event to announce addition of a new part.
      * @dev It is emitted when a new part is added.
@@ -65,8 +65,8 @@ interface IRMRKBaseStorage is IERC165 {
     }
 
     /**
-     * @notice The integral structure of a standard RMRK base item defining it.
-     * @dev Requires a minimum of 3 storage slots per base item, equivalent to roughly 60,000 gas as of Berlin hard fork
+     * @notice The integral structure of a standard RMRK catalog item defining it.
+     * @dev Requires a minimum of 3 storage slots per catalog item, equivalent to roughly 60,000 gas as of Berlin hard fork
      *  (April 14, 2021), though 5-7 storage slots is more realistic, given the standard length of an IPFS URI. This
      *  will result in between 25,000,000 and 35,000,000 gas per 250 assets--the maximum block size of Ethereum
      *  mainnet is 30M at peak usage.
@@ -110,14 +110,14 @@ interface IRMRKBaseStorage is IERC165 {
     }
 
     /**
-     * @notice Used to return the metadata URI of the associated base.
-     * @return string Base metadata URI
+     * @notice Used to return the metadata URI of the associated catalog.
+     * @return string Catalog metadata URI
      */
     function getMetadataURI() external view returns (string memory);
 
     /**
-     * @notice Used to return the `itemType` of the associated base
-     * @return string `itemType` of the associated base
+     * @notice Used to return the `itemType` of the associated catalog
+     * @return string `itemType` of the associated catalog
      */
     function getType() external view returns (string memory);
 

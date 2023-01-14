@@ -91,27 +91,27 @@ library NestableStorage {
 
 library EquippableStorage {
     struct State {
-        mapping(uint64 => ILightmEquippable.BaseRelatedData) _baseRelatedDatas;
-        uint64[] _allBaseRelatedAssetIds;
-        // tokenId => baseRelatedAssetId[]
-        mapping(uint256 => uint64[]) _activeBaseRelatedAssets;
-        // tokenId => baseRelatedAssetId => index
-        mapping(uint256 => mapping(uint64 => uint256)) _activeBaseRelatedAssetsPosition;
+        mapping(uint64 => ILightmEquippable.CatalogRelatedData) _catalogRelatedDatas;
+        uint64[] _allCatalogRelatedAssetIds;
+        // tokenId => catalogRelatedAssetId[]
+        mapping(uint256 => uint64[]) _activeCatalogRelatedAssets;
+        // tokenId => catalogRelatedAssetId => index
+        mapping(uint256 => mapping(uint64 => uint256)) _activeCatalogRelatedAssetsPosition;
         ILightmEquippable.SlotEquipment[] _slotEquipments;
-        // tokenId => baseRelatedAssetId => slotId => EquipmentPointer in _slotEquipments
+        // tokenId => catalogRelatedAssetId => slotId => EquipmentPointer in _slotEquipments
         mapping(uint256 => mapping(uint64 => mapping(uint64 => ILightmEquippable.EquipmentPointer))) _equipmentPointers;
-        // tokenId => baseRelatedAssetId => childContract => childTokenId => bool
-        // to make sure that every base instance can only has one slot occupied by one child.
+        // tokenId => catalogRelatedAssetId => childContract => childTokenId => bool
+        // to make sure that every catalog instance can only has one slot occupied by one child.
         // For example, you have a hat NFT which have 2 assets: 1st is for wearing on the head of human NFT,
         // 2nd is for holding on the hand of human NFT. You should never be able to let the human NFT
         // both wear and hold the hat NFT.
-        mapping(uint256 => mapping(uint64 => mapping(address => mapping(uint256 => bool)))) _baseAlreadyEquippedChild;
+        mapping(uint256 => mapping(uint64 => mapping(address => mapping(uint256 => bool)))) _catalogAlreadyEquippedChild;
         // records which slots are in the equipped state
         mapping(uint256 => mapping(uint64 => uint64[])) _equippedSlots;
-        // childContract => childTokenId => childBaseRelatedAssetId => EquipmentPointer in _slotEquipments
+        // childContract => childTokenId => childCatalogRelatedAssetId => EquipmentPointer in _slotEquipments
         mapping(address => mapping(uint256 => mapping(uint64 => ILightmEquippable.EquipmentPointer))) _childEquipmentPointers;
-        // records which childBaseRelatedAssets are in the equipped state
-        mapping(address => mapping(uint256 => uint64[])) _equippedChildBaseRelatedAssets;
+        // records which childCatalogRelatedAssets are in the equipped state
+        mapping(address => mapping(uint256 => uint64[])) _equippedChildCatalogRelatedAssets;
     }
 
     bytes32 constant STORAGE_POSITION = keccak256("lightm.equippable.storage");

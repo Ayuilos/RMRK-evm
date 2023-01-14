@@ -13,22 +13,22 @@ pragma solidity ^0.8.15;
 library LightmEquippableRenderUtils {
     error RMRKTokenHasNoAssets();
 
-    struct ActiveBaseRelatedAsset {
+    struct ActiveCatalogRelatedAsset {
         uint64 id;
         uint16 priority;
-        address baseAddress;
+        address catalogAddress;
         uint64 targetSlotId;
-        address targetBaseAddress;
+        address targetCatalogAddress;
         uint64[] partIds;
         string metadataURI;
     }
 
-    struct PendingBaseRelatedAsset {
+    struct PendingCatalogRelatedAsset {
         uint64 id;
         uint64 toBeReplacedId;
-        address baseAddress;
+        address catalogAddress;
         uint64 targetSlotId;
-        address targetBaseAddress;
+        address targetCatalogAddress;
         uint64[] partIds;
         string metadataURI;
     }
@@ -42,15 +42,15 @@ library LightmEquippableRenderUtils {
     struct ToBeRenderedPart {
         uint64 id;
         uint8 zIndex;
-        address childAssetBaseAddress;
+        address childAssetCatalogAddress;
         string metadataURI;
         Origin origin;
     }
 
-    function getActiveBaseRelatedAssets(address target, uint256 tokenId)
+    function getActiveCatalogRelatedAssets(address target, uint256 tokenId)
         public
         view
-        returns (ActiveBaseRelatedAsset[] memory)
+        returns (ActiveCatalogRelatedAsset[] memory)
     {
         ILightmEquippable eTarget = ILightmEquippable(target);
         IRMRKMultiAsset maTarget = IRMRKMultiAsset(target);
@@ -62,31 +62,31 @@ library LightmEquippableRenderUtils {
             revert RMRKTokenHasNoAssets();
         }
 
-        ActiveBaseRelatedAsset[]
-            memory activeBaseRelatedAssets = new ActiveBaseRelatedAsset[](len);
-        ILightmEquippable.BaseRelatedAsset memory baseRelatedAsset;
+        ActiveCatalogRelatedAsset[]
+            memory activeCatalogRelatedAssets = new ActiveCatalogRelatedAsset[](len);
+        ILightmEquippable.CatalogRelatedAsset memory catalogRelatedAsset;
         for (uint256 i; i < len; ) {
-            baseRelatedAsset = eTarget.getBaseRelatedAsset(assets[i]);
-            activeBaseRelatedAssets[i] = ActiveBaseRelatedAsset({
+            catalogRelatedAsset = eTarget.getCatalogRelatedAsset(assets[i]);
+            activeCatalogRelatedAssets[i] = ActiveCatalogRelatedAsset({
                 id: assets[i],
                 priority: priorities[i],
-                baseAddress: baseRelatedAsset.baseAddress,
-                targetSlotId: baseRelatedAsset.targetSlotId,
-                targetBaseAddress: baseRelatedAsset.targetBaseAddress,
-                partIds: baseRelatedAsset.partIds,
-                metadataURI: baseRelatedAsset.metadataURI
+                catalogAddress: catalogRelatedAsset.catalogAddress,
+                targetSlotId: catalogRelatedAsset.targetSlotId,
+                targetCatalogAddress: catalogRelatedAsset.targetCatalogAddress,
+                partIds: catalogRelatedAsset.partIds,
+                metadataURI: catalogRelatedAsset.metadataURI
             });
             unchecked {
                 ++i;
             }
         }
-        return activeBaseRelatedAssets;
+        return activeCatalogRelatedAssets;
     }
 
-    function getPendingBaseRelatedAssets(address target, uint256 tokenId)
+    function getPendingCatalogRelatedAssets(address target, uint256 tokenId)
         public
         view
-        returns (PendingBaseRelatedAsset[] memory)
+        returns (PendingCatalogRelatedAsset[] memory)
     {
         ILightmEquippable eTarget = ILightmEquippable(target);
         IRMRKMultiAsset maTarget = IRMRKMultiAsset(target);
@@ -97,35 +97,35 @@ library LightmEquippableRenderUtils {
             revert RMRKTokenHasNoAssets();
         }
 
-        PendingBaseRelatedAsset[]
-            memory pendingBaseRelatedAssets = new PendingBaseRelatedAsset[](
+        PendingCatalogRelatedAsset[]
+            memory pendingCatalogRelatedAssets = new PendingCatalogRelatedAsset[](
                 len
             );
-        ILightmEquippable.BaseRelatedAsset memory baseRelatedAsset;
+        ILightmEquippable.CatalogRelatedAsset memory catalogRelatedAsset;
         uint64 toBeReplacedId;
         for (uint256 i; i < len; ) {
-            baseRelatedAsset = eTarget.getBaseRelatedAsset(assets[i]);
+            catalogRelatedAsset = eTarget.getCatalogRelatedAsset(assets[i]);
             toBeReplacedId = maTarget.getAssetReplacements(tokenId, assets[i]);
-            pendingBaseRelatedAssets[i] = PendingBaseRelatedAsset({
+            pendingCatalogRelatedAssets[i] = PendingCatalogRelatedAsset({
                 id: assets[i],
                 toBeReplacedId: toBeReplacedId,
-                baseAddress: baseRelatedAsset.baseAddress,
-                targetSlotId: baseRelatedAsset.targetSlotId,
-                targetBaseAddress: baseRelatedAsset.targetBaseAddress,
-                partIds: baseRelatedAsset.partIds,
-                metadataURI: baseRelatedAsset.metadataURI
+                catalogAddress: catalogRelatedAsset.catalogAddress,
+                targetSlotId: catalogRelatedAsset.targetSlotId,
+                targetCatalogAddress: catalogRelatedAsset.targetCatalogAddress,
+                partIds: catalogRelatedAsset.partIds,
+                metadataURI: catalogRelatedAsset.metadataURI
             });
             unchecked {
                 ++i;
             }
         }
-        return pendingBaseRelatedAssets;
+        return pendingCatalogRelatedAssets;
     }
 
     function getToBeRenderedParts(
         address targetContract,
         uint256 tokenId,
-        uint64 baseRelatedAssetId
+        uint64 catalogRelatedAssetId
     ) public view returns (ToBeRenderedPart[] memory) {
         {
             (bool isValid, string memory reason) = LightmValidatorLib
@@ -135,18 +135,18 @@ library LightmEquippableRenderUtils {
         }
         {
             (bool isValid, string memory reason) = LightmValidatorLib
-                .isAValidBaseInstance(
+                .isAValidCatalogInstance(
                     targetContract,
                     tokenId,
-                    baseRelatedAssetId
+                    catalogRelatedAssetId
                 );
 
             if (!isValid) revert(reason);
         }
 
-        ILightmEquippable.BaseRelatedAsset memory selfBRA = ILightmEquippable(
+        ILightmEquippable.CatalogRelatedAsset memory selfBRA = ILightmEquippable(
             targetContract
-        ).getBaseRelatedAsset(baseRelatedAssetId);
+        ).getCatalogRelatedAsset(catalogRelatedAssetId);
 
         uint64[] memory partIds = selfBRA.partIds;
 
@@ -159,16 +159,16 @@ library LightmEquippableRenderUtils {
         uint256 j;
 
         for (uint256 i; i < len; ) {
-            IRMRKBaseStorage.Part memory part = IRMRKBaseStorage(
-                selfBRA.baseAddress
+            IRMRKCatalog.Part memory part = IRMRKCatalog(
+                selfBRA.catalogAddress
             ).getPart(partIds[i]);
 
-            if (part.itemType == IRMRKBaseStorage.ItemType.Slot) {
+            if (part.itemType == IRMRKCatalog.ItemType.Slot) {
                 ILightmEquippable.SlotEquipment memory equipment;
                 try
                     ILightmEquippable(targetContract).getSlotEquipment(
                         tokenId,
-                        baseRelatedAssetId,
+                        catalogRelatedAssetId,
                         partIds[i]
                     )
                 returns (ILightmEquippable.SlotEquipment memory _equipment) {
@@ -185,7 +185,7 @@ library LightmEquippableRenderUtils {
                     (bool isValid, ) = LightmValidatorLib.isSlotEquipmentValid(
                         targetContract,
                         tokenId,
-                        baseRelatedAssetId,
+                        catalogRelatedAssetId,
                         equipment
                     );
 
@@ -198,35 +198,35 @@ library LightmEquippableRenderUtils {
                     }
                 }
 
-                ILightmEquippable.BaseRelatedAsset
+                ILightmEquippable.CatalogRelatedAsset
                     memory childAsset = ILightmEquippable(
                         equipment.child.contractAddress
-                    ).getBaseRelatedAsset(equipment.childBaseRelatedAssetId);
+                    ).getCatalogRelatedAsset(equipment.childCatalogRelatedAssetId);
 
-                address childAssetBaseAddress = childAsset.baseAddress;
-                bool childAssetIsBase = childAssetBaseAddress != address(0)
-                    ? IERC165(childAssetBaseAddress).supportsInterface(
-                        type(IRMRKBaseStorage).interfaceId
+                address childAssetCatalogAddress = childAsset.catalogAddress;
+                bool childAssetIsCatalog = childAssetCatalogAddress != address(0)
+                    ? IERC165(childAssetCatalogAddress).supportsInterface(
+                        type(IRMRKCatalog).interfaceId
                     )
                     : false;
 
                 toBeRenderedParts[j] = ToBeRenderedPart({
                     id: partIds[i],
-                    childAssetBaseAddress: childAssetIsBase
-                        ? childAssetBaseAddress
+                    childAssetCatalogAddress: childAssetIsCatalog
+                        ? childAssetCatalogAddress
                         : address(0),
                     zIndex: part.z,
                     metadataURI: childAsset.metadataURI,
                     origin: Origin({
                         contractAddress: equipment.child.contractAddress,
                         tokenId: equipment.child.tokenId,
-                        assetId: equipment.childBaseRelatedAssetId
+                        assetId: equipment.childCatalogRelatedAssetId
                     })
                 });
-            } else if (part.itemType == IRMRKBaseStorage.ItemType.Fixed) {
+            } else if (part.itemType == IRMRKCatalog.ItemType.Fixed) {
                 toBeRenderedParts[j] = ToBeRenderedPart({
                     id: partIds[i],
-                    childAssetBaseAddress: address(0),
+                    childAssetCatalogAddress: address(0),
                     zIndex: part.z,
                     metadataURI: part.metadataURI,
                     origin: Origin({

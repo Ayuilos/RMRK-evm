@@ -6,13 +6,13 @@ import "../library/ValidatorLib.sol";
 import "./RMRKNestableMultiAssetInternal.sol";
 import {EquippableStorage} from "./Storage.sol";
 
-error LightmBaseRelatedAssetDidNotExist();
-error LightmCurrentBaseInstanceAlreadyEquippedThisChild();
+error LightmCatalogRelatedAssetDidNotExist();
+error LightmCurrentCatalogInstanceAlreadyEquippedThisChild();
 error LightmIndexOverLength();
 error LightmMismatchedEquipmentAndIDLength();
 error LightmMustRemoveSlotEquipmentFirst();
 error LightmNotInActiveAssets();
-error LightmNotValidBaseContract();
+error LightmNotValidCatalogContract();
 error LightmSlotEquipmentNotExist();
 error LightmSlotIsOccupied();
 
@@ -31,66 +31,66 @@ abstract contract LightmEquippableInternal is
         return EquippableStorage.getState();
     }
 
-    function _getBaseRelatedAsset(uint64 baseRelatedAssetId)
+    function _getCatalogRelatedAsset(uint64 catalogRelatedAssetId)
         internal
         view
-        returns (BaseRelatedAsset memory baseRelatedAsset)
+        returns (CatalogRelatedAsset memory catalogRelatedAsset)
     {
-        BaseRelatedData memory baseRelatedData = getEquippableState()
-            ._baseRelatedDatas[baseRelatedAssetId];
+        CatalogRelatedData memory catalogRelatedData = getEquippableState()
+            ._catalogRelatedDatas[catalogRelatedAssetId];
 
-        string memory assetMeta = _getAssetMetadata(baseRelatedAssetId);
+        string memory assetMeta = _getAssetMetadata(catalogRelatedAssetId);
 
-        baseRelatedAsset = BaseRelatedAsset({
-            id: baseRelatedAssetId,
-            baseAddress: baseRelatedData.baseAddress,
-            targetBaseAddress: baseRelatedData.targetBaseAddress,
-            targetSlotId: baseRelatedData.targetSlotId,
-            partIds: baseRelatedData.partIds,
+        catalogRelatedAsset = CatalogRelatedAsset({
+            id: catalogRelatedAssetId,
+            catalogAddress: catalogRelatedData.catalogAddress,
+            targetCatalogAddress: catalogRelatedData.targetCatalogAddress,
+            targetSlotId: catalogRelatedData.targetSlotId,
+            partIds: catalogRelatedData.partIds,
             metadataURI: assetMeta
         });
     }
 
-    function _getBaseRelatedAssets(uint64[] calldata baseRelatedAssetIds)
+    function _getCatalogRelatedAssets(uint64[] calldata catalogRelatedAssetIds)
         internal
         view
-        returns (BaseRelatedAsset[] memory)
+        returns (CatalogRelatedAsset[] memory)
     {
-        uint256 len = baseRelatedAssetIds.length;
-        BaseRelatedAsset[] memory baseRelatedAssets = new BaseRelatedAsset[](
+        uint256 len = catalogRelatedAssetIds.length;
+        CatalogRelatedAsset[] memory catalogRelatedAssets = new CatalogRelatedAsset[](
             len
         );
 
         for (uint256 i; i < len; ) {
-            uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
+            uint64 catalogRelatedAssetId = catalogRelatedAssetIds[i];
 
-            baseRelatedAssets[i] = _getBaseRelatedAsset(baseRelatedAssetId);
+            catalogRelatedAssets[i] = _getCatalogRelatedAsset(catalogRelatedAssetId);
 
             unchecked {
                 ++i;
             }
         }
 
-        return baseRelatedAssets;
+        return catalogRelatedAssets;
     }
 
-    function _getActiveBaseRelatedAssets(uint256 tokenId)
+    function _getActiveCatalogRelatedAssets(uint256 tokenId)
         internal
         view
         returns (uint64[] memory)
     {
-        uint64[] memory activeBaseRelatedAssetIds = getEquippableState()
-            ._activeBaseRelatedAssets[tokenId];
+        uint64[] memory activeCatalogRelatedAssetIds = getEquippableState()
+            ._activeCatalogRelatedAssets[tokenId];
 
-        return activeBaseRelatedAssetIds;
+        return activeCatalogRelatedAssetIds;
     }
 
-    function _getAllBaseRelatedAssetIds()
+    function _getAllCatalogRelatedAssetIds()
         internal
         view
-        returns (uint64[] memory allBaseRelatedAssetIds)
+        returns (uint64[] memory allCatalogRelatedAssetIds)
     {
-        allBaseRelatedAssetIds = getEquippableState()._allBaseRelatedAssetIds;
+        allCatalogRelatedAssetIds = getEquippableState()._allCatalogRelatedAssetIds;
     }
 
     //
@@ -98,23 +98,23 @@ abstract contract LightmEquippableInternal is
     //
 
     /**
-     * @dev get slotEquipment by tokenId, baseRelatedAssetId and slotId (from parent's perspective)
+     * @dev get slotEquipment by tokenId, catalogRelatedAssetId and slotId (from parent's perspective)
      */
     function _getSlotEquipment(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64 slotId
     ) internal view returns (SlotEquipment memory slotEquipment) {
         _requireMinted(tokenId);
 
         EquipmentPointer storage pointer = getEquippableState()
-            ._equipmentPointers[tokenId][baseRelatedAssetId][slotId];
+            ._equipmentPointers[tokenId][catalogRelatedAssetId][slotId];
 
         slotEquipment = _getSlotEquipmentByIndex(pointer.equipmentIndex);
 
         if (
             slotEquipment.tokenId != tokenId ||
-            slotEquipment.baseRelatedAssetId != baseRelatedAssetId ||
+            slotEquipment.catalogRelatedAssetId != catalogRelatedAssetId ||
             slotEquipment.slotId != slotId
         ) {
             revert LightmSlotEquipmentNotExist();
@@ -122,16 +122,16 @@ abstract contract LightmEquippableInternal is
     }
 
     /**
-     * @dev get slotEquipment by childContract, childTokenId and childBaseRelatedAssetId (from child's perspective)
+     * @dev get slotEquipment by childContract, childTokenId and childCatalogRelatedAssetId (from child's perspective)
      */
     function _getSlotEquipment(
         address childContract,
         uint256 childTokenId,
-        uint64 childBaseRelatedAssetId
+        uint64 childCatalogRelatedAssetId
     ) internal view returns (SlotEquipment memory slotEquipment) {
         EquipmentPointer storage pointer = getEquippableState()
             ._childEquipmentPointers[childContract][childTokenId][
-                childBaseRelatedAssetId
+                childCatalogRelatedAssetId
             ];
 
         slotEquipment = _getSlotEquipmentByIndex(pointer.equipmentIndex);
@@ -139,16 +139,16 @@ abstract contract LightmEquippableInternal is
         if (
             slotEquipment.child.contractAddress != childContract ||
             slotEquipment.child.tokenId != childTokenId ||
-            slotEquipment.childBaseRelatedAssetId != childBaseRelatedAssetId
+            slotEquipment.childCatalogRelatedAssetId != childCatalogRelatedAssetId
         ) {
             revert LightmSlotEquipmentNotExist();
         }
     }
 
     /**
-     * @dev get all about one base instance equipment status
+     * @dev get all about one catalog instance equipment status
      */
-    function _getSlotEquipments(uint256 tokenId, uint64 baseRelatedAssetId)
+    function _getSlotEquipments(uint256 tokenId, uint64 catalogRelatedAssetId)
         internal
         view
         returns (SlotEquipment[] memory)
@@ -156,7 +156,7 @@ abstract contract LightmEquippableInternal is
         _requireMinted(tokenId);
 
         uint64[] memory slotIds = getEquippableState()._equippedSlots[tokenId][
-            baseRelatedAssetId
+            catalogRelatedAssetId
         ];
         uint256 len = slotIds.length;
 
@@ -165,7 +165,7 @@ abstract contract LightmEquippableInternal is
         for (uint256 i; i < len; ) {
             slotEquipments[i] = _getSlotEquipment(
                 tokenId,
-                baseRelatedAssetId,
+                catalogRelatedAssetId,
                 slotIds[i]
             );
 
@@ -178,16 +178,16 @@ abstract contract LightmEquippableInternal is
     }
 
     /**
-     * @dev get one token's all baseRelatedAssets equipment status
+     * @dev get one token's all catalogRelatedAssets equipment status
      */
     function _getSlotEquipments(address childContract, uint256 childTokenId)
         internal
         view
         returns (SlotEquipment[] memory)
     {
-        uint64[] memory childBaseRelatedAssetIds = getEquippableState()
-            ._equippedChildBaseRelatedAssets[childContract][childTokenId];
-        uint256 len = childBaseRelatedAssetIds.length;
+        uint64[] memory childCatalogRelatedAssetIds = getEquippableState()
+            ._equippedChildCatalogRelatedAssets[childContract][childTokenId];
+        uint256 len = childCatalogRelatedAssetIds.length;
 
         SlotEquipment[] memory slotEquipments = new SlotEquipment[](len);
 
@@ -195,7 +195,7 @@ abstract contract LightmEquippableInternal is
             slotEquipments[i] = _getSlotEquipment(
                 childContract,
                 childTokenId,
-                childBaseRelatedAssetIds[i]
+                childCatalogRelatedAssetIds[i]
             );
 
             unchecked {
@@ -233,7 +233,7 @@ abstract contract LightmEquippableInternal is
      */
     function _addSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         SlotEquipment[] memory slotEquipments,
         bool doMoreCheck
     ) internal virtual {
@@ -241,7 +241,7 @@ abstract contract LightmEquippableInternal is
 
         if (doMoreCheck) {
             uint64[] memory activeAssetIds = _getActiveAssets(tokenId);
-            (, bool exist) = activeAssetIds.indexOf(baseRelatedAssetId);
+            (, bool exist) = activeAssetIds.indexOf(catalogRelatedAssetId);
             if (!exist) revert LightmNotInActiveAssets();
         }
 
@@ -254,7 +254,7 @@ abstract contract LightmEquippableInternal is
             // 1. Make sure slotEquipment is valid
             // 2. Make sure slot is not occupied
             // 3. Make sure current child has no asset participating
-            //    in the equipment action of current base instance before
+            //    in the equipment action of current catalog instance before
             if (doMoreCheck) {
                 {
                     address ownAddress = address(this);
@@ -262,7 +262,7 @@ abstract contract LightmEquippableInternal is
                         .isSlotEquipmentValid(
                             ownAddress,
                             tokenId,
-                            baseRelatedAssetId,
+                            catalogRelatedAssetId,
                             sE
                         );
 
@@ -274,7 +274,7 @@ abstract contract LightmEquippableInternal is
                 {
                     EquipmentPointer memory pointer = es._equipmentPointers[
                         tokenId
-                    ][baseRelatedAssetId][sE.slotId];
+                    ][catalogRelatedAssetId][sE.slotId];
                     SlotEquipment memory existSE;
 
                     if (es._slotEquipments.length > 0) {
@@ -283,7 +283,7 @@ abstract contract LightmEquippableInternal is
 
                     if (
                         existSE.slotId != uint64(0) ||
-                        existSE.childBaseRelatedAssetId != uint64(0) ||
+                        existSE.childCatalogRelatedAssetId != uint64(0) ||
                         existSE.child.contractAddress != address(0)
                     ) {
                         revert LightmSlotIsOccupied();
@@ -291,14 +291,14 @@ abstract contract LightmEquippableInternal is
                 }
 
                 {
-                    bool alreadyEquipped = es._baseAlreadyEquippedChild[
+                    bool alreadyEquipped = es._catalogAlreadyEquippedChild[
                         tokenId
-                    ][baseRelatedAssetId][sE.child.contractAddress][
+                    ][catalogRelatedAssetId][sE.child.contractAddress][
                             sE.child.tokenId
                         ];
 
                     if (alreadyEquipped) {
-                        revert LightmCurrentBaseInstanceAlreadyEquippedThisChild();
+                        revert LightmCurrentCatalogInstanceAlreadyEquippedThisChild();
                     }
                 }
             }
@@ -309,39 +309,39 @@ abstract contract LightmEquippableInternal is
             uint256 sELen = es._slotEquipments.length;
 
             uint256 equippedSlotsLen = es
-            ._equippedSlots[tokenId][baseRelatedAssetId].length;
+            ._equippedSlots[tokenId][catalogRelatedAssetId].length;
 
             uint256 equippedChildBRAsLen = es
-            ._equippedChildBaseRelatedAssets[childContract][childTokenId]
+            ._equippedChildCatalogRelatedAssets[childContract][childTokenId]
                 .length;
 
             // add the record to _equippedSlots
-            es._equippedSlots[tokenId][baseRelatedAssetId].push(sE.slotId);
+            es._equippedSlots[tokenId][catalogRelatedAssetId].push(sE.slotId);
 
-            // add the record to _baseAlreadyEquippedChild
-            es._baseAlreadyEquippedChild[tokenId][baseRelatedAssetId][
+            // add the record to _catalogAlreadyEquippedChild
+            es._catalogAlreadyEquippedChild[tokenId][catalogRelatedAssetId][
                 sE.child.contractAddress
             ][sE.child.tokenId] = true;
 
             // add the pointer which point at its position at
             // _equippedSlots(recordIndex) and _slotEquipments(equipmentIndex)
-            es._equipmentPointers[tokenId][baseRelatedAssetId][
+            es._equipmentPointers[tokenId][catalogRelatedAssetId][
                     sE.slotId
                 ] = EquipmentPointer({
                 equipmentIndex: sELen,
                 recordIndex: equippedSlotsLen
             });
 
-            // add the record to _equippeeChildBaseRelatedAssets
+            // add the record to _equippeeChildCatalogRelatedAssets
             es
-            ._equippedChildBaseRelatedAssets[childContract][childTokenId].push(
-                    sE.childBaseRelatedAssetId
+            ._equippedChildCatalogRelatedAssets[childContract][childTokenId].push(
+                    sE.childCatalogRelatedAssetId
                 );
 
             // add the pointer which point at its position at
-            // _equippedChildBaseRelatedAssets(recordIndex) and _slotEquipments(equipmentIndex)
+            // _equippedChildCatalogRelatedAssets(recordIndex) and _slotEquipments(equipmentIndex)
             es._childEquipmentPointers[childContract][childTokenId][
-                    sE.childBaseRelatedAssetId
+                    sE.childCatalogRelatedAssetId
                 ] = ILightmEquippableEventsAndStruct.EquipmentPointer({
                 equipmentIndex: sELen,
                 recordIndex: equippedChildBRAsLen
@@ -354,19 +354,19 @@ abstract contract LightmEquippableInternal is
             }
         }
 
-        emit SlotEquipmentsAdd(tokenId, baseRelatedAssetId, slotEquipments);
+        emit SlotEquipmentsAdd(tokenId, catalogRelatedAssetId, slotEquipments);
     }
 
     function _removeSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64[] memory slotIds
     ) internal virtual {
         _requireMinted(tokenId);
 
         (, bool exist) = getEquippableState()
-            ._activeBaseRelatedAssets[tokenId]
-            .indexOf(baseRelatedAssetId);
+            ._activeCatalogRelatedAssets[tokenId]
+            .indexOf(catalogRelatedAssetId);
         if (!exist) revert LightmNotInActiveAssets();
 
         uint256 len = slotIds.length;
@@ -377,26 +377,26 @@ abstract contract LightmEquippableInternal is
             EquippableStorage.State storage es = getEquippableState();
 
             EquipmentPointer memory ePointer = es._equipmentPointers[tokenId][
-                baseRelatedAssetId
+                catalogRelatedAssetId
             ][slotId];
 
             SlotEquipment memory slotEquipment = es._slotEquipments[
                 ePointer.equipmentIndex
             ];
 
-            // delete corresponding _baseAlreadyEquippedChild record
-            delete es._baseAlreadyEquippedChild[tokenId][baseRelatedAssetId][
+            // delete corresponding _catalogAlreadyEquippedChild record
+            delete es._catalogAlreadyEquippedChild[tokenId][catalogRelatedAssetId][
                 slotEquipment.child.contractAddress
             ][slotEquipment.child.tokenId];
 
-            // delete corresponding _equippedChildBaseRelatedAssets record
+            // delete corresponding _equippedChildCatalogRelatedAssets record
             {
                 IRMRKNestable.Child memory child = slotEquipment.child;
                 EquipmentPointer memory cEPointer = es._childEquipmentPointers[
                     child.contractAddress
-                ][child.tokenId][slotEquipment.childBaseRelatedAssetId];
+                ][child.tokenId][slotEquipment.childCatalogRelatedAssetId];
 
-                uint64[] storage bRAIds = es._equippedChildBaseRelatedAssets[
+                uint64[] storage bRAIds = es._equippedChildCatalogRelatedAssets[
                     child.contractAddress
                 ][child.tokenId];
 
@@ -414,7 +414,7 @@ abstract contract LightmEquippableInternal is
             // delete corresponding _equippedSlots record
             {
                 uint64[] storage equippedSlotIds = es._equippedSlots[tokenId][
-                    baseRelatedAssetId
+                    catalogRelatedAssetId
                 ];
 
                 uint64 lastSlotId = slotIds[slotIds.length - 1];
@@ -423,18 +423,18 @@ abstract contract LightmEquippableInternal is
 
                 // Due to the `removeItemByIndex` code detail, has to update the lastSlot's `recordIndex`
                 es
-                ._equipmentPointers[tokenId][baseRelatedAssetId][lastSlotId]
+                ._equipmentPointers[tokenId][catalogRelatedAssetId][lastSlotId]
                     .recordIndex = ePointer.recordIndex;
             }
 
             // delete corresponding _equipmentPointers record
-            delete es._equipmentPointers[tokenId][baseRelatedAssetId][slotId];
+            delete es._equipmentPointers[tokenId][catalogRelatedAssetId][slotId];
 
             // delete corresponding _childEquipmentPointers record
             delete es._childEquipmentPointers[
                 slotEquipment.child.contractAddress
             ][slotEquipment.child.tokenId][
-                    slotEquipment.childBaseRelatedAssetId
+                    slotEquipment.childCatalogRelatedAssetId
                 ];
 
             // remove slotEquipment from _slotEquipments
@@ -454,13 +454,13 @@ abstract contract LightmEquippableInternal is
                 // Has to update the last slotEquipment's `equipmentIndex` in corresponding pointers
                 EquipmentPointer storage lastEPointer = es._equipmentPointers[
                     slotEquipment.tokenId
-                ][slotEquipment.baseRelatedAssetId][slotEquipment.slotId];
+                ][slotEquipment.catalogRelatedAssetId][slotEquipment.slotId];
 
                 EquipmentPointer storage lastCEPointer = es
                     ._childEquipmentPointers[
                         slotEquipment.child.contractAddress
                     ][slotEquipment.child.tokenId][
-                        slotEquipment.childBaseRelatedAssetId
+                        slotEquipment.childCatalogRelatedAssetId
                     ];
 
                 uint256 equipmentIndex = ePointer.equipmentIndex;
@@ -474,17 +474,17 @@ abstract contract LightmEquippableInternal is
             }
         }
 
-        emit SlotEquipmentsRemove(tokenId, baseRelatedAssetId, slotIds);
+        emit SlotEquipmentsRemove(tokenId, catalogRelatedAssetId, slotIds);
     }
 
     function _removeSlotEquipments(
         address childContract,
         uint256 childTokenId,
-        uint64[] memory childBaseRelatedAssetIds
+        uint64[] memory childCatalogRelatedAssetIds
     ) internal virtual {
         uint256 parentTokenId;
-        uint256 len = childBaseRelatedAssetIds.length;
-        uint64[] memory baseRelatedAssetIds = new uint64[](len);
+        uint256 len = childCatalogRelatedAssetIds.length;
+        uint64[] memory catalogRelatedAssetIds = new uint64[](len);
         uint256 pointerOfBRAIds = 0;
         uint64[][] memory slotIds = new uint64[][](len);
         uint256[] memory pointers = new uint256[](len);
@@ -493,24 +493,24 @@ abstract contract LightmEquippableInternal is
             SlotEquipment memory sE = _getSlotEquipment(
                 childContract,
                 childTokenId,
-                childBaseRelatedAssetIds[i]
+                childCatalogRelatedAssetIds[i]
             );
 
             // Child only has one parent so parentTokenId is fixed in this function
             parentTokenId = sE.tokenId;
 
-            uint64 baseRelatedAssetId = sE.baseRelatedAssetId;
+            uint64 catalogRelatedAssetId = sE.catalogRelatedAssetId;
             uint64 slotId = sE.slotId;
 
-            (uint256 index, bool isExist) = baseRelatedAssetIds.indexOf(
-                baseRelatedAssetId
+            (uint256 index, bool isExist) = catalogRelatedAssetIds.indexOf(
+                catalogRelatedAssetId
             );
             if (isExist) {
                 uint256 pointer = pointers[index];
                 slotIds[index][pointer] = slotId;
                 pointers[index]++;
             } else {
-                baseRelatedAssetIds[pointerOfBRAIds] = baseRelatedAssetId;
+                catalogRelatedAssetIds[pointerOfBRAIds] = catalogRelatedAssetId;
                 slotIds[pointerOfBRAIds][0] = slotId;
 
                 pointers[pointerOfBRAIds] = 1;
@@ -523,12 +523,12 @@ abstract contract LightmEquippableInternal is
         }
 
         for (uint256 i; i < pointerOfBRAIds; ) {
-            uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
+            uint64 catalogRelatedAssetId = catalogRelatedAssetIds[i];
             uint64[] memory slotIdsOfBRA = slotIds[i];
 
             _removeSlotEquipments(
                 parentTokenId,
-                baseRelatedAssetId,
+                catalogRelatedAssetId,
                 slotIdsOfBRA
             );
 
@@ -579,25 +579,25 @@ abstract contract LightmEquippableInternal is
 
     // ------------------------ MultiAsset internal and override ------------------------
 
-    function _baseRelatedAssetAccept(uint256 tokenId, uint64 assetId)
+    function _catalogRelatedAssetAccept(uint256 tokenId, uint64 assetId)
         internal
         virtual
     {
         EquippableStorage.State storage es = getEquippableState();
-        // If baseRelatedDataExist, add assetId to `activeBaseAssets`
-        if (_baseRelatedDataExist(es._baseRelatedDatas[assetId])) {
+        // If catalogRelatedDataExist, add assetId to `activeCatalogAssets`
+        if (_catalogRelatedDataExist(es._catalogRelatedDatas[assetId])) {
             MultiAssetStorage.State storage mrs = getMRState();
 
-            uint64[] storage activeBaseRelatedAssets = es
-                ._activeBaseRelatedAssets[tokenId];
+            uint64[] storage activeCatalogRelatedAssets = es
+                ._activeCatalogRelatedAssets[tokenId];
 
             uint64 toBeReplacedId = mrs._assetReplacements[tokenId][assetId];
 
             if (toBeReplacedId != uint64(0)) {
-                uint256 position = es._activeBaseRelatedAssetsPosition[tokenId][
+                uint256 position = es._activeCatalogRelatedAssetsPosition[tokenId][
                     toBeReplacedId
                 ];
-                uint64 targetId = activeBaseRelatedAssets[position];
+                uint64 targetId = activeCatalogRelatedAssets[position];
 
                 if (targetId == toBeReplacedId) {
                     // Check if toBeReplacedId asset is participating equipment
@@ -620,8 +620,8 @@ abstract contract LightmEquippableInternal is
                         } catch {}
                     }
 
-                    activeBaseRelatedAssets[position] = assetId;
-                    es._activeBaseRelatedAssetsPosition[tokenId][
+                    activeCatalogRelatedAssets[position] = assetId;
+                    es._activeCatalogRelatedAssetsPosition[tokenId][
                         assetId
                     ] = position;
                 } else {
@@ -630,9 +630,9 @@ abstract contract LightmEquippableInternal is
             }
 
             if (toBeReplacedId == uint64(0)) {
-                activeBaseRelatedAssets.push(assetId);
-                es._activeBaseRelatedAssetsPosition[tokenId][assetId] =
-                    activeBaseRelatedAssets.length -
+                activeCatalogRelatedAssets.push(assetId);
+                es._activeCatalogRelatedAssetsPosition[tokenId][assetId] =
+                    activeCatalogRelatedAssets.length -
                     1;
             }
         }
@@ -644,7 +644,7 @@ abstract contract LightmEquippableInternal is
         override
     {
         uint64 assetId = getMRState()._pendingAssets[tokenId][index];
-        _baseRelatedAssetAccept(tokenId, assetId);
+        _catalogRelatedAssetAccept(tokenId, assetId);
 
         RMRKMultiAssetInternal._acceptAssetByIndex(tokenId, index);
     }
@@ -654,34 +654,34 @@ abstract contract LightmEquippableInternal is
         virtual
         override
     {
-        _baseRelatedAssetAccept(tokenId, assetId);
+        _catalogRelatedAssetAccept(tokenId, assetId);
 
         RMRKMultiAssetInternal._acceptAsset(tokenId, assetId);
     }
 
-    function _addBaseRelatedAssetEntry(
+    function _addCatalogRelatedAssetEntry(
         uint64 id,
-        BaseRelatedData memory baseRelatedAssetData,
+        CatalogRelatedData memory catalogRelatedAssetData,
         string memory metadataURI
     ) internal {
         _addAssetEntry(id, metadataURI);
 
-        getEquippableState()._baseRelatedDatas[id] = baseRelatedAssetData;
-        getEquippableState()._allBaseRelatedAssetIds.push(id);
+        getEquippableState()._catalogRelatedDatas[id] = catalogRelatedAssetData;
+        getEquippableState()._allCatalogRelatedAssetIds.push(id);
 
-        emit BaseRelatedAssetAdd(id);
+        emit CatalogRelatedAssetAdd(id);
     }
 
-    function _baseRelatedDataExist(BaseRelatedData memory baseRelatedData)
+    function _catalogRelatedDataExist(CatalogRelatedData memory catalogRelatedData)
         internal
         pure
         returns (bool)
     {
-        // The valid baseRelatedData at least has a valid baseAddress or a valid targetBaseAddress.
+        // The valid catalogRelatedData at least has a valid catalogAddress or a valid targetCatalogAddress.
         // If both are address(0), then it does not exist.
         if (
-            baseRelatedData.baseAddress != address(0) ||
-            baseRelatedData.targetBaseAddress != address(0)
+            catalogRelatedData.catalogAddress != address(0) ||
+            catalogRelatedData.targetCatalogAddress != address(0)
         ) {
             return true;
         }
@@ -713,16 +713,16 @@ abstract contract LightmEquippableInternal is
         {
             EquippableStorage.State storage es = getEquippableState();
             // remove all corresponding slotEquipments
-            uint64[] memory baseRelatedAssetIds = es._activeBaseRelatedAssets[
+            uint64[] memory catalogRelatedAssetIds = es._activeCatalogRelatedAssets[
                 tokenId
             ];
-            for (uint256 i; i < baseRelatedAssetIds.length; ) {
-                uint64 baseRelatedAssetId = baseRelatedAssetIds[i];
+            for (uint256 i; i < catalogRelatedAssetIds.length; ) {
+                uint64 catalogRelatedAssetId = catalogRelatedAssetIds[i];
                 uint64[] memory slotIds = es._equippedSlots[tokenId][
-                    baseRelatedAssetId
+                    catalogRelatedAssetId
                 ];
 
-                _removeSlotEquipments(tokenId, baseRelatedAssetId, slotIds);
+                _removeSlotEquipments(tokenId, catalogRelatedAssetId, slotIds);
 
                 unchecked {
                     ++i;

@@ -10,36 +10,36 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
 
     // ------------------------ MultiAsset ------------------------
 
-    function getBaseRelatedAsset(uint64 baseRelatedAssetId)
+    function getCatalogRelatedAsset(uint64 catalogRelatedAssetId)
         public
         view
-        returns (BaseRelatedAsset memory baseRelatedAsset)
+        returns (CatalogRelatedAsset memory catalogRelatedAsset)
     {
-        baseRelatedAsset = _getBaseRelatedAsset(baseRelatedAssetId);
+        catalogRelatedAsset = _getCatalogRelatedAsset(catalogRelatedAssetId);
     }
 
-    function getBaseRelatedAssets(uint64[] calldata baseRelatedAssetIds)
+    function getCatalogRelatedAssets(uint64[] calldata catalogRelatedAssetIds)
         public
         view
-        returns (BaseRelatedAsset[] memory)
+        returns (CatalogRelatedAsset[] memory)
     {
-        return _getBaseRelatedAssets(baseRelatedAssetIds);
+        return _getCatalogRelatedAssets(catalogRelatedAssetIds);
     }
 
-    function getActiveBaseRelatedAssets(uint256 tokenId)
+    function getActiveCatalogRelatedAssets(uint256 tokenId)
         public
         view
         returns (uint64[] memory)
     {
-        return _getActiveBaseRelatedAssets(tokenId);
+        return _getActiveCatalogRelatedAssets(tokenId);
     }
 
-    function getAllBaseRelatedAssetIds()
+    function getAllCatalogRelatedAssetIds()
         public
         view
-        returns (uint64[] memory allBaseRelatedAssetIds)
+        returns (uint64[] memory allCatalogRelatedAssetIds)
     {
-        allBaseRelatedAssetIds = _getAllBaseRelatedAssetIds();
+        allCatalogRelatedAssetIds = _getAllCatalogRelatedAssetIds();
     }
 
     //
@@ -47,48 +47,48 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
     //
 
     /**
-     * @dev get slotEquipment by tokenId, baseRelatedAssetId and slotId (from parent's perspective)
+     * @dev get slotEquipment by tokenId, catalogRelatedAssetId and slotId (from parent's perspective)
      */
     function getSlotEquipment(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64 slotId
     ) public view returns (SlotEquipment memory slotEquipment) {
         slotEquipment = _getSlotEquipment(
             tokenId,
-            baseRelatedAssetId,
+            catalogRelatedAssetId,
             slotId
         );
     }
 
     /**
-     * @dev get slotEquipment by childContract, childTokenId and childBaseRelatedAssetId (from child's perspective)
+     * @dev get slotEquipment by childContract, childTokenId and childCatalogRelatedAssetId (from child's perspective)
      */
     function getSlotEquipment(
         address childContract,
         uint256 childTokenId,
-        uint64 childBaseRelatedAssetId
+        uint64 childCatalogRelatedAssetId
     ) public view returns (SlotEquipment memory slotEquipment) {
         slotEquipment = _getSlotEquipment(
             childContract,
             childTokenId,
-            childBaseRelatedAssetId
+            childCatalogRelatedAssetId
         );
     }
 
     /**
-     * @dev get all about one base instance equipment status
+     * @dev get all about one catalog instance equipment status
      */
-    function getSlotEquipments(uint256 tokenId, uint64 baseRelatedAssetId)
+    function getSlotEquipments(uint256 tokenId, uint64 catalogRelatedAssetId)
         public
         view
         returns (SlotEquipment[] memory)
     {
-        return _getSlotEquipments(tokenId, baseRelatedAssetId);
+        return _getSlotEquipments(tokenId, catalogRelatedAssetId);
     }
 
     /**
-     * @dev get one token's all baseRelatedAssets equipment status
+     * @dev get one token's all catalogRelatedAssets equipment status
      */
     function getSlotEquipments(address childContract, uint256 childTokenId)
         public
@@ -116,13 +116,13 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
 
     function addSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         SlotEquipment[] memory slotEquipments,
         bool doMoreCheck
     ) public virtual {
         _addSlotEquipments(
             tokenId,
-            baseRelatedAssetId,
+            catalogRelatedAssetId,
             slotEquipments,
             doMoreCheck
         );
@@ -130,21 +130,21 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
 
     function removeSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64[] memory slotIds
     ) public virtual {
-        _removeSlotEquipments(tokenId, baseRelatedAssetId, slotIds);
+        _removeSlotEquipments(tokenId, catalogRelatedAssetId, slotIds);
     }
 
     function removeSlotEquipments(
         address childContract,
         uint256 childTokenId,
-        uint64[] memory childBaseRelatedAssetIds
+        uint64[] memory childCatalogRelatedAssetIds
     ) public virtual {
         _removeSlotEquipments(
             childContract,
             childTokenId,
-            childBaseRelatedAssetIds
+            childCatalogRelatedAssetIds
         );
     }
 }

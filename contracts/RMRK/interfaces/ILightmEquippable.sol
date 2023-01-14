@@ -6,46 +6,46 @@ import "./IRMRKNestable.sol";
 import "./IRMRKMultiAsset.sol";
 
 interface ILightmEquippableEventsAndStruct {
-    event BaseRelatedAssetAdd(uint64 indexed id);
+    event CatalogRelatedAssetAdd(uint64 indexed id);
 
     event SlotEquipmentsAdd(
         uint256 indexed tokenId,
-        uint64 indexed baseRelatedAssetId,
+        uint64 indexed catalogRelatedAssetId,
         SlotEquipment[] slotEquipments
     );
 
     event SlotEquipmentsRemove(
         uint256 indexed tokenId,
-        uint64 indexed baseRelatedAssetId,
+        uint64 indexed catalogRelatedAssetId,
         uint64[] indexes
     );
 
     /**
-        @dev `baseAddress` and `partIds` be used to construct a BaseStorage instance,
-        `targetBaseAddress` and `targetSlotId` be used to point at a Base slot,
+        @dev `catalogAddress` and `partIds` be used to construct a Catalog instance,
+        `targetCatalogAddress` and `targetSlotId` be used to point at a Catalog slot,
         the rest attributes are the same with `Asset`
      */
-    struct BaseRelatedAsset {
+    struct CatalogRelatedAsset {
         uint64 id;
-        address baseAddress;
+        address catalogAddress;
         uint64 targetSlotId;
-        address targetBaseAddress;
+        address targetCatalogAddress;
         uint64[] partIds;
         string metadataURI;
     }
 
-    struct BaseRelatedData {
-        address baseAddress;
+    struct CatalogRelatedData {
+        address catalogAddress;
         uint64 targetSlotId;
-        address targetBaseAddress;
+        address targetCatalogAddress;
         uint64[] partIds;
     }
 
     struct SlotEquipment {
         uint256 tokenId;
-        uint64 baseRelatedAssetId;
+        uint64 catalogRelatedAssetId;
         uint64 slotId;
-        uint64 childBaseRelatedAssetId;
+        uint64 childCatalogRelatedAssetId;
         IRMRKNestable.Child child;
     }
 
@@ -56,39 +56,39 @@ interface ILightmEquippableEventsAndStruct {
 }
 
 interface ILightmEquippable is ILightmEquippableEventsAndStruct {
-    function getBaseRelatedAsset(uint64 baseRelatedAssetId)
+    function getCatalogRelatedAsset(uint64 catalogRelatedAssetId)
         external
         view
-        returns (BaseRelatedAsset memory baseRelatedAsset);
+        returns (CatalogRelatedAsset memory catalogRelatedAsset);
 
-    function getBaseRelatedAssets(uint64[] memory)
+    function getCatalogRelatedAssets(uint64[] memory)
         external
         view
-        returns (BaseRelatedAsset[] memory);
+        returns (CatalogRelatedAsset[] memory);
 
-    function getActiveBaseRelatedAssets(uint256 tokenId)
+    function getActiveCatalogRelatedAssets(uint256 tokenId)
         external
         view
         returns (uint64[] memory);
 
-    function getAllBaseRelatedAssetIds()
+    function getAllCatalogRelatedAssetIds()
         external
         view
-        returns (uint64[] memory allBaseRelatedAssetIds);
+        returns (uint64[] memory allCatalogRelatedAssetIds);
 
     function getSlotEquipment(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64 slotId
     ) external view returns (SlotEquipment memory slotEquipment);
 
     function getSlotEquipment(
         address childContract,
         uint256 childTokenId,
-        uint64 childBaseRelatedAssetId
+        uint64 childCatalogRelatedAssetId
     ) external view returns (SlotEquipment memory slotEquipment);
 
-    function getSlotEquipments(uint256 tokenId, uint64 baseRelatedAsset)
+    function getSlotEquipments(uint256 tokenId, uint64 catalogRelatedAsset)
         external
         view
         returns (SlotEquipment[] memory slotEquipments);
@@ -105,20 +105,20 @@ interface ILightmEquippable is ILightmEquippableEventsAndStruct {
 
     function addSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         SlotEquipment[] memory slotEquipments,
         bool doMoreCheck
     ) external;
 
     function removeSlotEquipments(
         uint256 tokenId,
-        uint64 baseRelatedAssetId,
+        uint64 catalogRelatedAssetId,
         uint64[] memory slotIds
     ) external;
 
     function removeSlotEquipments(
         address childContract,
         uint256 childTokenId,
-        uint64[] calldata childBaseRelatedAssetIds
+        uint64[] calldata childCatalogRelatedAssetIds
     ) external;
 }

@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.15;
 
-import "./interfaces/IRMRKBaseStorage.sol";
+import "./interfaces/IRMRKCatalog.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 /**
- * @title RMRKBaseStorage
+ * @title RMRKCatalog
  * @author RMRK team
- * @notice Base storage contract for RMRK equippable module.
+ * @notice Catalog contract for RMRK equippable module.
  */
-contract RMRKBaseStorage is IRMRKBaseStorage {
+contract RMRKCatalog is IRMRKCatalog {
     error RMRKBadConfig();
     error RMRKIdZeroForbidden();
     error RMRKPartAlreadyExists();
@@ -21,7 +21,7 @@ contract RMRKBaseStorage is IRMRKBaseStorage {
     using Address for address;
 
     /**
-     * @dev Mapping of uint64 `partId` to IRMRKBaseStorage `Part` struct
+     * @dev Mapping of uint64 `partId` to IRMRKCatalog `Part` struct
      */
     mapping(uint64 => Part) private _parts;
 
@@ -65,27 +65,27 @@ contract RMRKBaseStorage is IRMRKBaseStorage {
     ) public view virtual returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
-            interfaceId == type(IRMRKBaseStorage).interfaceId;
+            interfaceId == type(IRMRKCatalog).interfaceId;
     }
 
     /**
-     * @notice Used to return the metadata URI of the associated base.
-     * @return string Base metadata URI
+     * @notice Used to return the metadata URI of the associated catalog.
+     * @return string Catalog metadata URI
      */
     function getMetadataURI() external view returns (string memory) {
         return _metadataURI;
     }
 
     /**
-     * @notice Used to return the `itemType` of the associated base
-     * @return string `itemType` of the associated base
+     * @notice Used to return the `itemType` of the associated catalog
+     * @return string `itemType` of the associated catalog
      */
     function getType() external view returns (string memory) {
         return _type;
     }
 
     /**
-     * @dev Internal helper function that adds `Part` entries to storage.
+     * @dev Internal helper function that adds `Part` entries.
      * @dev Delegates to { _addPart } below.
      * @param partIntake An array of `IntakeStruct` structs, consisting of `partId` and a nested `Part` struct
      */
@@ -100,7 +100,7 @@ contract RMRKBaseStorage is IRMRKBaseStorage {
     }
 
     /**
-     * @dev Internal function that adds a single `Part` to storage.
+     * @dev Internal function that adds a single `Part`.
      * @param partIntake `IntakeStruct` struct consisting of `partId` and a nested `Part` struct
      *
      */
@@ -128,7 +128,7 @@ contract RMRKBaseStorage is IRMRKBaseStorage {
     }
 
     /**
-     * @dev Internal function used to add multiple `equippableAddresses` to a single base entry.
+     * @dev Internal function used to add multiple `equippableAddresses` to a single catalog entry.
      * @dev Can only be called on `Slot` type of `Part`s.
      * @param partId ID of the `Part` that we are adding the equippable addresses to
      * @param equippableAddresses An array of addresses that can be equipped into the `Part` associated with the `partId`
