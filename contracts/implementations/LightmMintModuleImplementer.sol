@@ -3,13 +3,11 @@
 pragma solidity ^0.8.15;
 
 import "../RMRK/internalFunctionSet/LightmMintModuleInternal.sol";
-import "../RMRK/internalFunctionSet/LightmImplInternal.sol";
 import {ILightmMintModule} from "../RMRK/interfaces/ILightmMintModule.sol";
 
 contract LightmMintModuleImplementer is
     ILightmMintModule,
-    LightmMintModuleInternal,
-    LightmImplInternal
+    LightmMintModuleInternal
 {
     /**
      * @inheritdoc ILightmMintModule
@@ -58,6 +56,13 @@ contract LightmMintModuleImplementer is
      */
     function totalSupply() public view returns (uint256) {
         return _totalSupply();
+    }
+
+    /**
+     * @inheritdoc ILightmMintModule
+     */
+    function withdraw() public onlyOwner {
+        _withdraw();
     }
 
     /**

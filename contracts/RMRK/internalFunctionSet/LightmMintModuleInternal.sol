@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {LightmMintModuleStorage, ERC721Storage} from "./Storage.sol";
+import {LightmMintModuleStorage} from "./Storage.sol";
 import "../interfaces/ILightmMintModule.sol";
 import "./RMRKNestableInternal.sol";
+import "./LightmImplInternal.sol";
 
 abstract contract LightmMintModuleInternal is
     ILightmMintModuleStruct,
+    LightmImplInternal,
     RMRKNestableInternal
 {
     error LightmMintModuleNoWhitelistStageSet();
@@ -65,6 +67,12 @@ abstract contract LightmMintModuleInternal is
 
     function _totalSupply() internal view returns (uint256) {
         return getLightmMintModuleState().totalSupply;
+    }
+
+    function _withdraw() internal {
+        address owner = getLightmImplState()._owner;
+
+        payable(owner).transfer(address(this).balance);
     }
 
     function _beforeTokenTransfer(

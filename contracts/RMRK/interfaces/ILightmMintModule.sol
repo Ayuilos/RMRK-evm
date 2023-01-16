@@ -53,6 +53,11 @@ interface ILightmMintModule is ILightmMintModuleStruct {
     function setMintPermission(MintStage mintStage, bool allow) external;
 
     /**
+     * @dev beneficiary can invoke this function to withdraw income
+     */
+    function withdraw() external;
+
+    /**
      * @dev return the total supply of collection
      */
     function totalSupply() external returns (uint256 totalSupply);
