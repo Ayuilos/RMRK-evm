@@ -125,6 +125,6 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
             )
         );
 
-        emit LightmCollectionCreated(instanceAddress);
+        emit LightmCollectionCreated(instanceAddress, msg.sender);
     }
 }

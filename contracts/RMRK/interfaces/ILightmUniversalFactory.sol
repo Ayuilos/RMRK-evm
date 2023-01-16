@@ -22,7 +22,10 @@ interface ILightmUniversalFactory {
         IDiamondCut.FacetCut[] cuts;
     }
 
-    event LightmCollectionCreated(address indexed collectionAddress);
+    event LightmCollectionCreated(
+        address indexed collectionAddress,
+        address indexed owner
+    );
 
     function deployCollection(LightmInit.InitStruct memory initStruct) external;
 
