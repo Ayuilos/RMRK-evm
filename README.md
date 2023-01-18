@@ -40,7 +40,7 @@ Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable
 | [Diamond](./contracts/RMRK/Diamond.sol)                                                    | The real contract that store all state                              | no        |
 | [LightmInit](./contracts/RMRK/LightmInit.sol)                                              | The diamond raw facet used to initializes the state of the contract | yes       |
 | [LightmImplementer](./contracts/implementations/LightmImplementer.sol)                     | The implementation used by `UniversalFactory` by default            | yes       |
-| [LightmMintModuleImplementer](./contracts/implementations/LightmMintModuleImplementer.sol) | The isolated mint module, be used by `UniversalFactory` by default  | true      |
+| [LightmMintModuleImplementer](./contracts/implementations/LightmMintModuleImplementer.sol) | The isolated mint module, be used by `UniversalFactory` by default  | yes       |
 
 #### More about mint module
 - You could choose how to mint token:
