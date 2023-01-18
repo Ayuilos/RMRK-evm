@@ -52,5 +52,10 @@ contract LightmImpl is
         uint64 toBeReplacedId
     ) external onlyApprovedForAssetsOrOwner(tokenId) {
         _addAssetToToken(tokenId, assetId, toBeReplacedId);
+
+        // Auto accept asset if invoker is owner of token
+        if (msg.sender == _ownerOf(tokenId)) {
+            _acceptAsset(tokenId, assetId);
+        }
     }
 }
