@@ -2,12 +2,14 @@
 
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../RMRK/internalFunctionSet/LightmMintModuleInternal.sol";
 import {ILightmMintModule} from "../RMRK/interfaces/ILightmMintModule.sol";
 
 contract LightmMintModuleImplementer is
     ILightmMintModule,
-    LightmMintModuleInternal
+    LightmMintModuleInternal,
+    ReentrancyGuard
 {
     /**
      * @inheritdoc ILightmMintModule
@@ -68,21 +70,25 @@ contract LightmMintModuleImplementer is
     /**
      * @inheritdoc ILightmMintModule
      */
-    function mint() public payable {
+    function mint() public payable nonReentrant {
         _directMint(msg.sender, MintStage.publicStage);
     }
 
     /**
      * @inheritdoc ILightmMintModule
      */
-    function mint(uint256 tokenId) public payable {
+    function mint(uint256 tokenId) public payable nonReentrant {
         _directMint(msg.sender, tokenId, MintStage.publicStage);
     }
 
     /**
      * @inheritdoc ILightmMintModule
      */
-    function whitelistMint(address to, bytes32[] memory proof) public payable {
+    function whitelistMint(address to, bytes32[] memory proof)
+        public
+        payable
+        nonReentrant
+    {
         _mintByProvidingProof(to, proof);
     }
 
@@ -93,7 +99,7 @@ contract LightmMintModuleImplementer is
         uint256 tokenId,
         address to,
         bytes32[] memory proof
-    ) public payable {
+    ) public payable nonReentrant {
         _mintByProvidingProof(tokenId, to, proof);
     }
 }
