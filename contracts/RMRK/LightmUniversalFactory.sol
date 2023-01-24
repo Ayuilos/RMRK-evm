@@ -13,7 +13,6 @@ import "./library/ValidatorLib.sol";
 import "./library/RMRKMultiAssetRenderUtils.sol";
 
 import {LightmInit} from "./LightmInit.sol";
-import {LightmImpl} from "../implementations/LightmImplementer.sol";
 
 import "./interfaces/ILightmUniversalFactory.sol";
 
