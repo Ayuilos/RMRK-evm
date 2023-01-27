@@ -9,6 +9,11 @@ interface ILightmMultiAssetEventsAndStruct {
         uint64 id;
         string metadataURI;
     }
+
+    /**
+     * @dev notice that a new fallback metadata is set
+     */
+    event LightmMultiAssetFallbackURISet(string fallbackURI);
 }
 
 interface ILightmMultiAssetExtension is ILightmMultiAssetEventsAndStruct {

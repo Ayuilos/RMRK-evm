@@ -353,6 +353,8 @@ abstract contract RMRKMultiAssetInternal is
         MultiAssetStorage.State storage s = getMRState();
 
         s._fallbackURI = fallbackURI;
+
+        emit LightmMultiAssetFallbackURISet(fallbackURI);
     }
 
     function _addAssetToToken(

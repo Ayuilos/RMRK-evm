@@ -6,9 +6,9 @@ import {IERC165, IERC721, IERC721Metadata} from "@openzeppelin/contracts/token/E
 import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 import {IRMRKNestable, ILightmNestableExtension} from "./interfaces/ILightmNestable.sol";
-import {IRMRKMultiAsset, ILightmMultiAssetExtension} from "./interfaces/ILightmMultiAsset.sol";
+import {IRMRKMultiAsset, ILightmMultiAssetExtension, ILightmMultiAssetEventsAndStruct} from "./interfaces/ILightmMultiAsset.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
-import {IRMRKCollectionMetadata} from "./interfaces/IRMRKCollectionMetadata.sol";
+import {IRMRKCollectionMetadata, IRMRKCollectionMetadataEventsAndStruct} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ILightmImplementer} from "./interfaces/ILightmImplementer.sol";
 import {ILightmMintModule} from "./interfaces/ILightmMintModule.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage, LightmMintModuleStorage} from "./internalFunctionSet/Storage.sol";
@@ -17,7 +17,10 @@ import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataS
 // with data from a deployment script. Use the init function to initialize state variables
 // of your diamond. Add parameters to the init funciton if you need to.
 
-contract LightmInit {
+contract LightmInit is
+    IRMRKCollectionMetadataEventsAndStruct,
+    ILightmMultiAssetEventsAndStruct
+{
     struct InitStruct {
         string name;
         string symbol;
@@ -70,9 +73,11 @@ contract LightmInit {
 
         MultiAssetStorage.State storage mrs = MultiAssetStorage.getState();
         mrs._fallbackURI = _initStruct.fallbackURI;
+        emit LightmMultiAssetFallbackURISet(_initStruct.fallbackURI);
 
         CollectionMetadataStorage.State storage cms = CollectionMetadataStorage
             .getState();
         cms._collectionMetadata = _initStruct.collectionMetadataURI;
+        emit RMRKCollectionMetdataSet(_initStruct.collectionMetadataURI);
     }
 }
