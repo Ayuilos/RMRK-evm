@@ -4,21 +4,46 @@ pragma solidity ^0.8.15;
 
 import "../RMRK/access/OwnableLock.sol";
 import "../RMRK/RMRKCatalog.sol";
+import "../RMRK/interfaces/ILightmCatalog.sol";
 
 /**
- * @dev Contract for storing 'catalog' elements of NFTs to be accessed
- * by instances of RMRKAsset implementing contracts. This default
- * implementation includes an OwnableLock dependency, which allows
- * the deployer to freeze the state of the catalog contract.
- *
- * In addition, this implementation treats the catalog registry as an
- * append-only ledger, so
+ * @title LightmCatalogImplementer
+ * @notice Implementation of RMRK catalog with events to record `metadataURI` and `type_` changes.
+ * @dev Contract for storing 'catalog' elements of NFTs to be accessed by instances of `LightmEquippable` implementing contracts.
+ *  This default implementation includes an OwnableLock dependency, which allows the deployer to freeze the state of the
+ *  catalog contract.
  */
-
-contract RMRKCatalogImplementer is OwnableLock, RMRKCatalog {
+contract LightmCatalogImplementer is
+    ILightmCatalogEventsAndStruct,
+    OwnableLock,
+    RMRKCatalog
+{
     constructor(string memory metadataURI, string memory type_)
         RMRKCatalog(metadataURI, type_)
-    {}
+    {
+        emit LightmCatalogMetadataURISet(metadataURI);
+        emit LightmCatalogTypeSet(type_);
+    }
+
+    function setMetadataURI(string memory metadataURI)
+        public
+        virtual
+        onlyOwnerOrContributor
+    {
+        _setMetadataURI(metadataURI);
+
+        emit LightmCatalogMetadataURISet(metadataURI);
+    }
+
+    function setType(string memory type_)
+        public
+        virtual
+        onlyOwnerOrContributor
+    {
+        _setType(type_);
+
+        emit LightmCatalogTypeSet(type_);
+    }
 
     function addPart(IntakeStruct calldata intakeStruct)
         public

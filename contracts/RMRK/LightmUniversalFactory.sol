@@ -13,6 +13,7 @@ import "./library/ValidatorLib.sol";
 import "./library/RMRKMultiAssetRenderUtils.sol";
 
 import {LightmInit} from "./LightmInit.sol";
+import {LightmCatalogImplementer} from "../implementations/LightmCatalogImplementer.sol";
 
 import "./interfaces/ILightmUniversalFactory.sol";
 
@@ -125,5 +126,18 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         );
 
         emit LightmCollectionCreated(instanceAddress, msg.sender);
+    }
+
+    function deployCatalog(string calldata metadataURI, string calldata type_)
+        external
+    {
+        LightmCatalogImplementer instance = new LightmCatalogImplementer(
+            metadataURI,
+            type_
+        );
+
+        instance.transferOwnership(msg.sender);
+
+        emit LightmCatalogDeployed(address(instance), msg.sender);
     }
 }
