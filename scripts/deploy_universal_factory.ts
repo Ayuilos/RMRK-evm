@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { LightmInit__factory } from '../typechain-types';
-import { ILightmUniversalFactory } from '../typechain-types/contracts/RMRK/LightmUniversalFactory';
+import { ILightmUniversalFactory } from '../typechain-types/contracts/src/LightmUniversalFactory';
 import {
   create2DeployerAddress,
   deployCreate2Deployer,

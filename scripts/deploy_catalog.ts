@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat';
 import { IRMRKCatalog } from '../typechain-types/contracts/implementations/LightmCatalogImplementer';
-import { LightmCatalogDeployedEvent } from '../typechain-types/contracts/RMRK/LightmUniversalFactory';
+import { LightmCatalogDeployedEvent } from '../typechain-types/contracts/src/LightmUniversalFactory';
 import { getCatalogPartId } from './libraries/catalog';
 
 const Slot = 1;

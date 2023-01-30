@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.15;
 
-import "../RMRK/access/OwnableLock.sol";
-import "../RMRK/RMRKCatalog.sol";
-import "../RMRK/interfaces/ILightmCatalog.sol";
+import "../src/access/OwnableLock.sol";
+import "../src/RMRKCatalog.sol";
+import "../src/interfaces/ILightmCatalog.sol";
 
 /**
  * @title LightmCatalogImplementer

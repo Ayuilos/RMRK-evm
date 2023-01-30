@@ -3,8 +3,8 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../RMRK/internalFunctionSet/LightmMintModuleInternal.sol";
-import {ILightmMintModule} from "../RMRK/interfaces/ILightmMintModule.sol";
+import "../src/internalFunctionSet/LightmMintModuleInternal.sol";
+import {ILightmMintModule} from "../src/interfaces/ILightmMintModule.sol";
 
 contract LightmMintModuleImplementer is
     ILightmMintModule,

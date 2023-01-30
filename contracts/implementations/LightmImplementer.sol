@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.15;
 
-import "../RMRK/library/LibDiamond.sol";
-import "../RMRK/internalFunctionSet/LightmEquippableInternal.sol";
-import "../RMRK/internalFunctionSet/RMRKCollectionMetadataInternal.sol";
-import "../RMRK/internalFunctionSet/LightmImplInternal.sol";
-import {ILightmImplementer} from "../RMRK/interfaces/ILightmImplementer.sol";
+import "../src/library/LibDiamond.sol";
+import "../src/internalFunctionSet/LightmEquippableInternal.sol";
+import "../src/internalFunctionSet/RMRKCollectionMetadataInternal.sol";
+import "../src/internalFunctionSet/LightmImplInternal.sol";
+import {ILightmImplementer} from "../src/interfaces/ILightmImplementer.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
 contract LightmImpl is
