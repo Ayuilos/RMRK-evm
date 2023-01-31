@@ -1,3 +1,4 @@
+import { writeFile } from 'fs/promises';
 import { ethers } from 'hardhat';
 import { LightmInit__factory } from '../typechain-types';
 import { ILightmUniversalFactory } from '../typechain-types/contracts/src/LightmUniversalFactory';
@@ -58,9 +59,21 @@ async function deploy() {
     ethers.utils.keccak256(LightmInit__factory.bytecode),
   );
 
+  console.log(`LightmInit deployed: ${lightmInitAddress}`);
+
   let counters = 0;
 
   const { cut, ...rest } = await oneTimeDeploy(create2DeployerAddress, false, true);
+  try {
+    const filePath = './scripts/cutsForVerifyConstructors.json';
+    await writeFile(filePath, JSON.stringify(cut), {
+      encoding: 'utf-8',
+    });
+
+    console.log('Cuts has been writing to', filePath);
+  } catch (e) {
+    console.log(e);
+  }
 
   for (let i = 0; i < cut.length; i++) {
     const { functionSelectors } = cut[i];

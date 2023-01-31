@@ -11,3 +11,4 @@ temp
 #Hardhat files
 cache
 artifacts
+scripts/cutsForVerifyConstructors.json
