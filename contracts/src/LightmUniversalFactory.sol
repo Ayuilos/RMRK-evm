@@ -3,14 +3,6 @@
 pragma solidity ^0.8.15;
 
 import "./Diamond.sol";
-import "./DiamondCutFacet.sol";
-import "./DiamondLoupeFacet.sol";
-import "./LightmEquippableNestableFacet.sol";
-import "./LightmEquippableMultiAssetFacet.sol";
-import "./LightmEquippableFacet.sol";
-import "./RMRKCollectionMetadataFacet.sol";
-import "./library/ValidatorLib.sol";
-import "./library/RMRKMultiAssetRenderUtils.sol";
 
 import {LightmInit} from "./LightmInit.sol";
 import {LightmCatalogImplementer} from "../implementations/LightmCatalogImplementer.sol";
