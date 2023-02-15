@@ -140,7 +140,7 @@ contract OwnableLock is Context {
     }
 
     function _onlyOwnerOrContributor() private view {
-        if (owner() != _msgSender() && isContributor(_msgSender()))
+        if (owner() != _msgSender() && !isContributor(_msgSender()))
             revert RMRKNotOwnerOrContributor();
     }
 
