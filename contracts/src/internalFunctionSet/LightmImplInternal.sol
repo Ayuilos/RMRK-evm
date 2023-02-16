@@ -12,9 +12,13 @@ abstract contract LightmImplInternal {
         return LightmImplStorage.getState();
     }
 
+    function _isOwner() internal view returns(bool) {
+        return getLightmImplState()._owner == msg.sender;
+    }
+
     modifier onlyOwner() {
         require(
-            getLightmImplState()._owner == msg.sender,
+            _isOwner(),
             "LightmImpl:Not Owner"
         );
         _;

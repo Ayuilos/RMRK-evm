@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {LibDiamond} from "./library/LibDiamond.sol";
 import {IERC165, IERC721, IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./access/AccessControl.sol";
 import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 import {IRMRKNestable, ILightmNestableExtension} from "./interfaces/ILightmNestable.sol";
@@ -19,7 +20,8 @@ import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataS
 
 contract LightmInit is
     IRMRKCollectionMetadataEventsAndStruct,
-    ILightmMultiAssetEventsAndStruct
+    ILightmMultiAssetEventsAndStruct,
+    AccessControlInternal
 {
     struct InitStruct {
         string name;
@@ -51,6 +53,7 @@ contract LightmInit is
         ds.supportedInterfaces[
             type(IRMRKCollectionMetadata).interfaceId
         ] = true;
+        ds.supportedInterfaces[type(IAccessControl).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmImplementer).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmMintModule).interfaceId] = true;
 
@@ -60,6 +63,9 @@ contract LightmInit is
         // These arguments are used to execute an arbitrary function using delegatecall
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
+
+        _grantRole(DEFAULT_ADMIN_ROLE, _owner);
+
         LightmImplStorage.State storage lis = LightmImplStorage.getState();
         lis._owner = _owner;
 
