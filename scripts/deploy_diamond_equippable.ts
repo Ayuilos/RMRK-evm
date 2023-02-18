@@ -208,7 +208,7 @@ export async function oneTimeDeploy(
     ],
     LightmEquippableMultiAssetFacet: [
       ['string', 'string'],
-      [`LightmMultiAsset${versionSuffix}`, `LMR${versionSuffix}`],
+      [`LightmMultiAsset${versionSuffix}`, `LMA${versionSuffix}`],
     ],
   };
   const libraryLinking: { [k: string]: any } = {
