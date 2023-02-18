@@ -188,11 +188,9 @@ library LightmValidatorLib {
             }
         }
 
-        ILightmEquippable.SlotEquipment[]
-            memory validSlotEquipments = new ILightmEquippable.SlotEquipment[](
-                j
-            );
-        validSlotEquipments = _validSlotEquipments;
+        assembly {
+            mstore(_validSlotEquipments, j)
+        }
 
         return _validSlotEquipments;
     }
