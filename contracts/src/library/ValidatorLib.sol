@@ -7,8 +7,6 @@ import "../interfaces/IRMRKMultiAsset.sol";
 import "../interfaces/ILightmEquippable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./RMRKLib.sol";
 
@@ -68,7 +66,7 @@ library LightmValidatorLib {
     function getValidChildrenOf(address targetContract, uint256 tokenId)
         public
         view
-        returns (IRMRKNestable.Child[] memory validChildren)
+        returns (IRMRKNestable.Child[] memory)
     {
         (bool isValid, string memory reason) = isAValidNestableContract(
             targetContract
@@ -79,6 +77,9 @@ library LightmValidatorLib {
                 targetContract
             ).childrenOf(tokenId);
             uint256 len = children.length;
+
+            IRMRKNestable.Child[]
+                memory validChildren = new IRMRKNestable.Child[](len);
             uint256 j;
 
             for (uint256 i; i < len; ) {
@@ -102,7 +103,9 @@ library LightmValidatorLib {
                         isNft
                     ) {
                         validChildren[j] = child;
-                        ++j;
+                        unchecked {
+                            ++j;
+                        }
                     }
                 }
 
@@ -110,6 +113,13 @@ library LightmValidatorLib {
                     ++i;
                 }
             }
+
+            // use assembly to cut `validChildren` to meaningful length
+            assembly {
+                mstore(validChildren, j)
+            }
+
+            return validChildren;
         } else {
             revert(reason);
         }
@@ -301,9 +311,7 @@ library LightmValidatorLib {
                 .getCatalogRelatedAsset(catalogRelatedAssetId);
 
         address catalogContract = catalogRelatedAsset.catalogAddress;
-        (bool isCatalog, ) = isAValidCatalogContract(
-            catalogContract
-        );
+        (bool isCatalog, ) = isAValidCatalogContract(catalogContract);
 
         // `catalogRelatedAsset` has to be a Catalog instance
         if (!isCatalog) {
@@ -373,7 +381,9 @@ library LightmValidatorLib {
                 uint64[]
                     memory childActiveCatalogRelatedAssetIds = ILightmEquippable(
                         slotEquipment.child.contractAddress
-                    ).getActiveCatalogRelatedAssets(slotEquipment.child.tokenId);
+                    ).getActiveCatalogRelatedAssets(
+                            slotEquipment.child.tokenId
+                        );
 
                 // The child token's `catalogRelatedAssetId` has to be in child token's activeCatalogRelatedAssetIds
                 if (
@@ -388,8 +398,9 @@ library LightmValidatorLib {
 
             {
                 ILightmEquippable.CatalogRelatedAsset
-                    memory catalogRelatedAsset = ILightmEquippable(targetContract)
-                        .getCatalogRelatedAsset(catalogRelatedAssetId);
+                    memory catalogRelatedAsset = ILightmEquippable(
+                        targetContract
+                    ).getCatalogRelatedAsset(catalogRelatedAssetId);
 
                 ILightmEquippable.CatalogRelatedAsset
                     memory childCatalogRelatedAsset = ILightmEquippable(

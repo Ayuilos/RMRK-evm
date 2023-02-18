@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import "./IRMRKNestable.sol";
-import "./IRMRKMultiAsset.sol";
 
 interface ILightmEquippableEventsAndStruct {
     event CatalogRelatedAssetAdd(uint64 indexed id);
