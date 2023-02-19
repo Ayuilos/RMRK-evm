@@ -6,7 +6,7 @@ import {
   create2DeployerAddress,
   deployCreate2Deployer,
   oneTimeDeploy,
-  versionSuffix,
+  version,
 } from './deploy_diamond_equippable';
 
 export default async function deployUniversalFactory(
@@ -17,7 +17,7 @@ export default async function deployUniversalFactory(
   const create2Deployer = await ethers.getContractAt('Create2Deployer', create2DeployerAddress);
   const UniversalFactory = await ethers.getContractFactory('LightmUniversalFactory', signers[0]);
 
-  const hash = ethers.utils.id(`LightmUniversalFactory${versionSuffix}`);
+  const hash = ethers.utils.id(`LightmUniversalFactory${version}`);
 
   const constructorParams = ethers.utils.defaultAbiCoder.encode(
     [
@@ -50,7 +50,7 @@ async function deploy() {
     signers[0],
   );
 
-  const lightmInitHash = ethers.utils.id(`LightmInit${versionSuffix}`);
+  const lightmInitHash = ethers.utils.id(`LightmInit-${version}`);
   let tx = await create2Deployer.deploy(0, lightmInitHash, LightmInit__factory.bytecode);
   await tx.wait();
 

@@ -8,7 +8,7 @@ const PUBLIC_ACCOUNT_PRIVATE_KEY =
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const TRANSACTION_SIGNER_ADDRESS = '0xFBa50dD46Af71D60721C6E38F40Bce4d2416A34B';
 
-export const versionSuffix = '0.1.0-alpha';
+export const version = '0.1.1-alpha';
 export const create2DeployerAddress = '0xcf2281070e6a50e4050694eef1a9a7376628d663';
 
 async function isHardhatChain() {
@@ -76,7 +76,7 @@ export async function oneTimeDeploy(
   // -----------------
 
   // ---------- Create2 deployment
-  const rmrkMultiAssetRenderUtilsHash = ethers.utils.id('RMRKMultiAssetRenderUtils');
+  const rmrkMultiAssetRenderUtilsHash = ethers.utils.id(`RMRKMultiAssetRenderUtils-${version}`);
   if (!deployed) {
     await create2Deployer.deploy(
       0,
@@ -105,7 +105,7 @@ export async function oneTimeDeploy(
   // -----------------
 
   // ---------- Create2 deployment
-  const lightmValidatorLibHash = ethers.utils.id('LightmValidatorLib');
+  const lightmValidatorLibHash = ethers.utils.id(`LightmValidatorLib-${version}`);
   if (!deployed) {
     await create2Deployer.deploy(0, lightmValidatorLibHash, LightmValidatorLib.bytecode);
   }
@@ -134,7 +134,7 @@ export async function oneTimeDeploy(
   // -----------------
 
   // ---------- Create2 deployment
-  const lightmEquippableRenderUtilsHash = ethers.utils.id('LightmEquippableRenderUtils');
+  const lightmEquippableRenderUtilsHash = ethers.utils.id(`LightmEquippableRenderUtils-${version}`);
   if (!deployed) {
     await create2Deployer.deploy(
       0,
@@ -164,7 +164,7 @@ export async function oneTimeDeploy(
   // -----------------
 
   // ---------- Create2 deployment
-  const diamondCutFacetHash = ethers.utils.id('DiamondCutFacet');
+  const diamondCutFacetHash = ethers.utils.id(`DiamondCutFacet-${version}`);
   if (!deployed) {
     await create2Deployer.deploy(0, diamondCutFacetHash, DiamondCutFacet.bytecode);
   }
@@ -196,19 +196,14 @@ export async function oneTimeDeploy(
     LightmImpl: true,
   };
 
-  const hashConcat: { [k: string]: string } = {
-    LightmEquippableMultiAssetFacet: versionSuffix,
-    LightmEquippableNestableFacet: versionSuffix,
-  };
-
   const constructorParams: { [k: string]: [any[], any[]] } = {
     LightmEquippableNestableFacet: [
       ['string', 'string'],
-      [`LightmNestable${versionSuffix}`, `LN${versionSuffix}`],
+      [`LightmNestable-${version}`, `LN-${version}`],
     ],
     LightmEquippableMultiAssetFacet: [
       ['string', 'string'],
-      [`LightmMultiAsset${versionSuffix}`, `LMA${versionSuffix}`],
+      [`LightmMultiAsset-${version}`, `LMA-${version}`],
     ],
   };
   const libraryLinking: { [k: string]: any } = {
@@ -262,7 +257,7 @@ export async function oneTimeDeploy(
       // -----------------
     } else {
       // ---------- Create2 deployment
-      const facetHash = ethers.utils.id(`${FacetName}${hashConcat[FacetName] || ''}`);
+      const facetHash = ethers.utils.id(`${FacetName}-${version}`);
       const constructorParam = constructorParams[FacetName];
       const facetByteCode = constructorParam
         ? ethers.utils.concat([
