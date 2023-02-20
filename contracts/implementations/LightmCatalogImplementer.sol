@@ -21,6 +21,7 @@ contract LightmCatalogImplementer is
     constructor(string memory metadataURI, string memory type_)
         RMRKCatalog(metadataURI, type_)
     {
+        emit LightmCatalogDeployed();
         emit LightmCatalogMetadataURISet(metadataURI);
         emit LightmCatalogTypeSet(type_);
     }

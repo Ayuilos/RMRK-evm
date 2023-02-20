@@ -27,11 +27,6 @@ interface ILightmUniversalFactory {
         address indexed owner
     );
 
-    event LightmCatalogDeployed(
-        address indexed catalogAddress,
-        address indexed owner
-    );
-
     function deployCollection(LightmInit.InitStruct memory initStruct) external;
 
     function deployCatalog(string memory metadataURI, string memory type_)
