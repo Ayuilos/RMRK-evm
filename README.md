@@ -3,7 +3,8 @@
 Lightm is a [RMRK EVM](https://github.com/rmrk-team/evm) fork, and it uses the [EIP-2535](https://eips.ethereum.org/EIPS/eip-2535)'s [diamond 2](https://github.com/mudgen/diamond-2-hardhat) implementation to implement [RMRK Spec](https://github.com/rmrk-team/rmrk-spec/tree/master/standards/abstract).
 
 ## Note
-To be added.
+- We have different implementations with RMRK on Equippable concept.
+- We don't have test part now, but we will add it in the future.
 
 ## Local Development
 - Run `npm i` or `yarn` to install deps first.
