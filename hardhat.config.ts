@@ -80,6 +80,10 @@ const config: HardhatUserConfig = {
       url: process.env.SEPOLIA_URL || 'http://127.0.0.1:8545',
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    scrollAlpha: {
+      url: 'https://alpha-rpc.scroll.io/l2',
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
