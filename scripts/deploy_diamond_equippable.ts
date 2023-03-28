@@ -22,7 +22,12 @@ async function isHardhatChain() {
   return false;
 }
 
-export async function deployCreate2Deployer() {
+/**
+ * @param usePreSign Will use pre-sign transaction by default to make sure `create2Deployer` address is always the same on every chain, but if you suffer `legacy pre-eip-155 transactions not supported`,
+ * try call this function with `false` to not use pre-sign transaction (NOTE this will make `create2Deployer` address differ).
+ * @returns create2DeployerAddress
+ */
+export async function deployCreate2Deployer(usePreSign = true) {
   // if is in local chain, send some value to transaction signer address
   if (await isHardhatChain()) {
     const publicAccount = new ethers.Wallet(PUBLIC_ACCOUNT_PRIVATE_KEY, ethers.provider);
@@ -34,6 +39,7 @@ export async function deployCreate2Deployer() {
     await tx.wait();
   }
 
+  if (usePreSign) {
   // This pre-signed transaction is signed by 0xFBa50dD46Af71D60721C6E38F40Bce4d2416A34B,
   // gasLimit at 300_000, gasPrice at 100Gwei.
   // The EIP-155 is disabled to make sure transaction can be replayed on every single EVM chain,
@@ -49,6 +55,20 @@ export async function deployCreate2Deployer() {
   const transactionRes = await ethers.provider.sendTransaction(preSignedTransaction);
 
   console.log('Transaction Response is', transactionRes);
+  } else {
+    console.log(
+      'Will not use pre-signed transaction, make sure you use the correct create2Deployer address in the next deploying process',
+    );
+
+    const signer = (await ethers.getSigners())[0];
+    const create2DeployerFactory = await ethers.getContractFactory('Create2Deployer', signer);
+
+    const create2Deployer = await create2DeployerFactory.deploy();
+
+    console.log('Transaction Response is', create2Deployer.deployTransaction);
+
+    return create2Deployer.address;
+  }
 
   return create2DeployerAddress;
 }
