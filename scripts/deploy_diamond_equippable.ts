@@ -450,6 +450,7 @@ export async function deployDiamondAndCutFacet(
         mintStyle: 1,
       },
     ],
+    contractOwner.address,
   ];
 
   // call to init function
