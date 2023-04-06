@@ -43,8 +43,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       mining: {
-        auto: false,
-        interval: [500, 2000],
+        // auto: false,
+        // interval: [500, 2000],
       },
     },
     ropsten: {
