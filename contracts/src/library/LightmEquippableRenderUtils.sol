@@ -63,7 +63,9 @@ library LightmEquippableRenderUtils {
         }
 
         ActiveCatalogRelatedAsset[]
-            memory activeCatalogRelatedAssets = new ActiveCatalogRelatedAsset[](len);
+            memory activeCatalogRelatedAssets = new ActiveCatalogRelatedAsset[](
+                len
+            );
         ILightmEquippable.CatalogRelatedAsset memory catalogRelatedAsset;
         for (uint256 i; i < len; ) {
             catalogRelatedAsset = eTarget.getCatalogRelatedAsset(assets[i]);
@@ -144,9 +146,9 @@ library LightmEquippableRenderUtils {
             if (!isValid) revert(reason);
         }
 
-        ILightmEquippable.CatalogRelatedAsset memory selfBRA = ILightmEquippable(
-            targetContract
-        ).getCatalogRelatedAsset(catalogRelatedAssetId);
+        ILightmEquippable.CatalogRelatedAsset
+            memory selfBRA = ILightmEquippable(targetContract)
+                .getCatalogRelatedAsset(catalogRelatedAssetId);
 
         uint64[] memory partIds = selfBRA.partIds;
 
@@ -159,9 +161,8 @@ library LightmEquippableRenderUtils {
         uint256 j;
 
         for (uint256 i; i < len; ) {
-            IRMRKCatalog.Part memory part = IRMRKCatalog(
-                selfBRA.catalogAddress
-            ).getPart(partIds[i]);
+            IRMRKCatalog.Part memory part = IRMRKCatalog(selfBRA.catalogAddress)
+                .getPart(partIds[i]);
 
             if (part.itemType == IRMRKCatalog.ItemType.Slot) {
                 ILightmEquippable.SlotEquipment memory equipment;
@@ -201,10 +202,13 @@ library LightmEquippableRenderUtils {
                 ILightmEquippable.CatalogRelatedAsset
                     memory childAsset = ILightmEquippable(
                         equipment.child.contractAddress
-                    ).getCatalogRelatedAsset(equipment.childCatalogRelatedAssetId);
+                    ).getCatalogRelatedAsset(
+                            equipment.childCatalogRelatedAssetId
+                        );
 
                 address childAssetCatalogAddress = childAsset.catalogAddress;
-                bool childAssetIsCatalog = childAssetCatalogAddress != address(0)
+                bool childAssetIsCatalog = childAssetCatalogAddress !=
+                    address(0)
                     ? IERC165(childAssetCatalogAddress).supportsInterface(
                         type(IRMRKCatalog).interfaceId
                     )
@@ -241,6 +245,10 @@ library LightmEquippableRenderUtils {
                 ++i;
                 ++j;
             }
+        }
+
+        assembly {
+            mstore(toBeRenderedParts, j)
         }
 
         return toBeRenderedParts;
