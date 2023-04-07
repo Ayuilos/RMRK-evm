@@ -64,6 +64,7 @@ export async function deployCreate2Deployer(usePreSign = true) {
     const create2DeployerFactory = await ethers.getContractFactory('Create2Deployer', signer);
 
     const create2Deployer = await create2DeployerFactory.deploy();
+    await create2Deployer.deployed();
 
     console.log('Transaction Response is', create2Deployer.deployTransaction);
 
