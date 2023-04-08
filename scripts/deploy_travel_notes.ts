@@ -173,7 +173,7 @@ export async function deployCatalog({
 
 async function deploy() {
   // If create2Deployer is already deployed, comment this line.
-  // const CREATE2_DEPLOYER_ADDRESS = await deployCreate2Deployer(false);
+  const CREATE2_DEPLOYER_ADDRESS = await deployCreate2Deployer(false);
 
   // - If these one-time deployment contracts in this function have been deployed,
   // you should set the 2nd param to `true` to avoid deploying and take the return value for invoking `deployDiamondAndCutFacet`.
