@@ -119,6 +119,7 @@ contract TravelNotes is TravelNotesInternal {
         }
 
         _addChild(parentTokenId, childTokenId, data);
+        _acceptChild(parentTokenId, msg.sender, childTokenId);
     }
 
     function _beforeTokenTransfer(
@@ -144,8 +145,15 @@ contract TravelNotes is TravelNotesInternal {
             revert TravelNotesCanOnlyMintOne();
         }
 
+        uint256 nextTokenId = totalSupply() + 1;
+
         getTravelNotesState().mintRecord[msg.sender] = 1;
 
-        _safeMint(msg.sender, totalSupply());
+        // mint token
+        _safeMint(msg.sender, nextTokenId);
+
+        // add and accept default asset for token
+        _addAssetToToken(nextTokenId, uint64(1), uint64(0));
+        _acceptAsset(nextTokenId, uint64(1));
     }
 }

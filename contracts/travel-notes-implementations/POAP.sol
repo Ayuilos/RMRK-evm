@@ -78,13 +78,92 @@ contract POAP is
         }
     }
 
-    function mint(address to, bool isSoulBound) external onlyOwner {
-        uint256 nextTokenId = totalSupply();
+    function mint(
+        address to,
+        uint256 noteId,
+        bool isSoulBound
+    ) external onlyOwner {
+        uint256 nextTokenId = totalSupply() + 1;
 
         if (isSoulBound) {
             getPOAPState().isNonTransferableMap[nextTokenId] = 1;
         }
 
-        _safeMint(to, nextTokenId);
+        // asset id 1 - 10 for travel notes line 1 - 10 by default
+        // be sure asset entries are added in before mint
+        // or here will revert
+        for (uint256 i = 1; i <= 10; i++) {
+            _addAssetToToken(nextTokenId, uint64(i), uint64(0));
+            _acceptAsset(nextTokenId, uint64(i));
+        }
+
+        _nestMint(to, nextTokenId, noteId, "");
+    }
+
+    // ------ Functions below is needed to override origin erc721 / rmrk-nestable contract functions to make soul-bound work ------
+
+    function burn(uint256 tokenId)
+        public
+        virtual
+        onlyApprovedOrDirectOwner(tokenId)
+        returns (uint256)
+    {
+        return _burn(tokenId, 0);
+    }
+
+    function burn(uint256 tokenId, uint256 maxRecursiveBurns)
+        public
+        virtual
+        onlyApprovedOrDirectOwner(tokenId)
+        returns (uint256)
+    {
+        return _burn(tokenId, maxRecursiveBurns);
+    }
+
+    function nestTransfer(
+        address to,
+        uint256 tokenId,
+        uint256 destinationId
+    ) public virtual {
+        nestTransferFrom(_msgSender(), to, tokenId, destinationId, "");
+    }
+
+    function transfer(address to, uint256 tokenId) public virtual {
+        transferFrom(_msgSender(), to, tokenId);
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual onlyApprovedOrDirectOwner(tokenId) {
+        _transfer(from, to, tokenId);
+    }
+
+    function nestTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 destinationId,
+        bytes memory data
+    ) public virtual onlyApprovedOrDirectOwner(tokenId) {
+        _nestTransfer(from, to, tokenId, destinationId, data);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual {
+        safeTransferFrom(from, to, tokenId, "");
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual onlyApprovedOrDirectOwner(tokenId) {
+        _safeTransfer(from, to, tokenId, data);
     }
 }

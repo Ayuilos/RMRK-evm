@@ -3,12 +3,24 @@ import { ethers } from 'hardhat';
 import { POAPInit__factory } from '../typechain-types';
 import { IPOAPFactory } from '../typechain-types/contracts/travel-notes-implementations/POAPFactory.sol/POAPFactory';
 import { oneTimeDeploy, version } from './deploy_diamond_equippable';
-import { CREATE2_DEPLOYER_ADDRESS } from './deploy_travel_notes';
+import { CREATE2_DEPLOYER_ADDRESS, LINES } from './deploy_travel_notes';
 
-// !!! Run deploy_travel_notes.ts first to get this json
+// !!! Run deploy_travel_notes.ts first to get these json
 import travelNotesAddressJson from './travelNotesAddress.json';
+import travelNotesCatalogAddressJson from './travelNotesCatalogAddress.json';
 
 const POAP_FACTORY_VERSION = '0.1.0';
+
+const helloWorldSamplePOAPMetadata =
+  'ipfs://bafkreihncqinyzfmtvajtnj6zpysapisa5gdx6avkvcyr366ygxjefhr54';
+const willingToGiveSamplePOAPMetadata =
+  'ipfs://bafkreida23slbvkr6nuzww5qb4derisxgpiwmqc3vz7of3u3cuaahmiwqi';
+const loyaltySamplePOAPMetadata =
+  'ipfs://bafkreifkdofawfxijgcyz7x5xog7etvf2wn3iccmsubkixbrpmjxvixdny';
+const cagedBirdSamplePOAPMetadata =
+  'ipfs://bafkreigjlkngr5cy75m5axefmfhhamit22mkuuitm2pv773rlwmuu3gfsi';
+const squareGooseSamplePOAPMetadata =
+  'ipfs://bafkreihfhcw2qg2kznxnr7m3p77x3zytnwuq3zkkb2afmuo4xoxgqetyhy';
 
 export default async function deployPOAPFactory(
   CREATE2_DEPLOYER_ADDRESS: string,
@@ -78,6 +90,20 @@ async function deploy() {
         POAP: true,
       },
     },
+    addOn: {
+      toBeRemovedFunctions: {
+        LightmEquippableNestableFacet: [
+          'burn(uint256)',
+          'burn(uint256,uint256)',
+          'nestTransfer(address,uint256,uint256)',
+          'transfer(address,uint256)',
+          'transferFrom(address,address,uint256)',
+          'nestTransferFrom(address,address,uint256,uint256,bytes)',
+          'safeTransferFrom(address,address,uint256,bytes)',
+          'safeTransferFrom(address,address,uint256)',
+        ],
+      },
+    },
   });
 
   try {
@@ -126,8 +152,20 @@ async function deploy() {
   await tx.wait();
   console.log(`Grant WHITELIST_MANAGER_ROLE to POAP factory address: ${factoryAddress}`);
 
+  await deployPOAP(helloWorldSamplePOAPMetadata, factoryAddress, [travelNotesAddress, 1]);
+  await deployPOAP(willingToGiveSamplePOAPMetadata, factoryAddress, [travelNotesAddress, 1]);
+  await deployPOAP(loyaltySamplePOAPMetadata, factoryAddress, [travelNotesAddress, 1]);
+  await deployPOAP(cagedBirdSamplePOAPMetadata, factoryAddress, [travelNotesAddress, 1]);
+  await deployPOAP(squareGooseSamplePOAPMetadata, factoryAddress, [travelNotesAddress, 1]);
+}
+
+export async function deployPOAP(
+  poapMetadata: string,
+  factoryAddress: string,
+  [travelNotesAddress, noteId]: [string, number],
+) {
   const poapFactory = await ethers.getContractAt('POAPFactory', factoryAddress);
-  tx = await poapFactory.deployPOAP({
+  let tx = await poapFactory.deployPOAP({
     name: 'Test',
     symbol: 'TEST',
     fallbackURI: '',
@@ -136,8 +174,48 @@ async function deploy() {
   const txRec = await tx.wait();
   const { events } = txRec;
   const createdEvent = events?.find((eventRecord) => eventRecord.event === 'POAPCreated');
-  console.log(`Deploy POAP diamond: ${createdEvent?.args?.[0]}`);
-  console.log('Deployment success');
+  const poapAddress = createdEvent?.args?.[0];
+  console.log(`Deploy POAP diamond: ${poapAddress}`);
+
+  const poapImplFacet = await ethers.getContractAt('LightmImpl', poapAddress);
+
+  const addAssetEntryMulticallData = [];
+
+  for (let i = 1; i <= LINES; i++) {
+    const data = poapImplFacet.interface.encodeFunctionData('addCatalogRelatedAssetEntry', [
+      i,
+      {
+        catalogAddress: ethers.constants.AddressZero,
+        partIds: [],
+        targetCatalogAddress: travelNotesCatalogAddressJson.address,
+        targetSlotId: i,
+      },
+      poapMetadata,
+    ]);
+
+    addAssetEntryMulticallData.push(data);
+  }
+
+  tx = await poapImplFacet.multicall(addAssetEntryMulticallData);
+  await tx.wait();
+  console.log('Add asset entries for travel notes line 1 - 10 successfully');
+
+  tx = await mintPOAP(poapAddress, travelNotesAddress, noteId);
+}
+
+export async function mintPOAP(
+  poapAddress: string,
+  travelNotesAddress: string,
+  noteId: number,
+  isSoulBound = true,
+) {
+  const poapDiamond = await ethers.getContractAt('POAP', poapAddress);
+  const tx = await poapDiamond.mint(travelNotesAddress, noteId, isSoulBound);
+  await tx.wait();
+  console.log(
+    `Mint 1 POAP to travel note (address = ${travelNotesAddress}, id = ${noteId}) successfully`,
+  );
+  return tx;
 }
 
 deploy();
