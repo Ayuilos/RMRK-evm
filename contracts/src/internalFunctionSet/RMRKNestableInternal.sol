@@ -44,13 +44,9 @@ abstract contract RMRKNestableInternal is
 
     // ------------------------ Ownership ------------------------
 
-    function _ownerOf(uint256 tokenId)
-        internal
-        view
-        virtual
-        override
-        returns (address)
-    {
+    function _ownerOf(
+        uint256 tokenId
+    ) internal view virtual override returns (address) {
         (address owner, uint256 ownerTokenId, bool isNft) = _directOwnerOf(
             tokenId
         );
@@ -67,28 +63,19 @@ abstract contract RMRKNestableInternal is
      * by a wallet, tokenId will be zero and isNft will be false. Otherwise, the returned data is the
      * contract address and tokenID of the owner NFT, as well as its isNft flag.
      */
-    function _directOwnerOf(uint256 tokenId)
-        internal
-        view
-        virtual
-        returns (
-            address,
-            uint256,
-            bool
-        )
-    {
+    function _directOwnerOf(
+        uint256 tokenId
+    ) internal view virtual returns (address, uint256, bool) {
         DirectOwner storage owner = getNestableState()._DirectOwners[tokenId];
         if (owner.ownerAddress == address(0)) revert ERC721InvalidTokenId();
 
-        return (owner.ownerAddress, owner.tokenId, owner.isNft);
+        return (owner.ownerAddress, owner.tokenId, owner.tokenId != 0);
     }
 
-    function _isApprovedOrDirectOwner(address spender, uint256 tokenId)
-        internal
-        view
-        virtual
-        returns (bool)
-    {
+    function _isApprovedOrDirectOwner(
+        address spender,
+        uint256 tokenId
+    ) internal view virtual returns (bool) {
         (address owner, uint256 parentTokenId, ) = _directOwnerOf(tokenId);
         if (parentTokenId != 0) {
             return (spender == owner);
@@ -119,33 +106,28 @@ abstract contract RMRKNestableInternal is
      * @dev Returns all confirmed children
      */
 
-    function _childrenOf(uint256 parentTokenId)
-        internal
-        view
-        returns (Child[] memory)
-    {
+    function _childrenOf(
+        uint256 parentTokenId
+    ) internal view returns (Child[] memory) {
         Child[] memory children = getNestableState()._activeChildren[
             parentTokenId
         ];
         return children;
     }
 
-    function _pendingChildrenOf(uint256 parentTokenId)
-        internal
-        view
-        returns (Child[] memory)
-    {
+    function _pendingChildrenOf(
+        uint256 parentTokenId
+    ) internal view returns (Child[] memory) {
         Child[] memory pendingChildren = getNestableState()._pendingChildren[
             parentTokenId
         ];
         return pendingChildren;
     }
 
-    function _childOf(uint256 parentTokenId, uint256 index)
-        internal
-        view
-        returns (Child memory)
-    {
+    function _childOf(
+        uint256 parentTokenId,
+        uint256 index
+    ) internal view returns (Child memory) {
         _isOverLength(parentTokenId, index, false);
 
         Child memory child = getNestableState()._activeChildren[parentTokenId][
@@ -154,11 +136,10 @@ abstract contract RMRKNestableInternal is
         return child;
     }
 
-    function _pendingChildOf(uint256 parentTokenId, uint256 index)
-        internal
-        view
-        returns (Child memory)
-    {
+    function _pendingChildOf(
+        uint256 parentTokenId,
+        uint256 index
+    ) internal view returns (Child memory) {
         _isOverLength(parentTokenId, index, true);
 
         Child memory child = getNestableState()._pendingChildren[parentTokenId][
@@ -171,15 +152,7 @@ abstract contract RMRKNestableInternal is
         uint256 tokenId,
         address childContract,
         uint256 childTokenId
-    )
-        internal
-        view
-        returns (
-            bool found,
-            bool isPending,
-            uint256 index
-        )
-    {
+    ) internal view returns (bool found, bool isPending, uint256 index) {
         _requireMinted(tokenId);
 
         NestableStorage.State storage ns = getNestableState();
@@ -260,16 +233,14 @@ abstract contract RMRKNestableInternal is
         if (isNft) {
             getNestableState()._DirectOwners[tokenId] = DirectOwner({
                 ownerAddress: to,
-                tokenId: destinationId,
-                isNft: true
+                tokenId: destinationId
             });
 
             _sendToNFT(address(0), to, 0, destinationId, tokenId, data);
         } else {
             getNestableState()._DirectOwners[tokenId] = DirectOwner({
                 ownerAddress: to,
-                tokenId: 0,
-                isNft: false
+                tokenId: 0
             });
         }
 
@@ -323,11 +294,10 @@ abstract contract RMRKNestableInternal is
 
     // ------------------------ BURNING ------------------------
 
-    function _burn(uint256 tokenId, uint256 maxChildrenBurns)
-        internal
-        virtual
-        returns (uint256)
-    {
+    function _burn(
+        uint256 tokenId,
+        uint256 maxChildrenBurns
+    ) internal virtual returns (uint256) {
         (address immediateOwner, uint256 parentId, ) = _directOwnerOf(tokenId);
         address owner = _ownerOf(tokenId);
 
@@ -460,12 +430,7 @@ abstract contract RMRKNestableInternal is
         );
 
         getState()._balances[from] -= 1;
-        _updateOwnerAndClearApprovals(
-            tokenId,
-            isNft ? destinationId : 0,
-            to,
-            isNft
-        );
+        _updateOwnerAndClearApprovals(tokenId, isNft ? destinationId : 0, to);
         getState()._balances[to] += 1;
 
         if (isNft)
@@ -515,13 +480,11 @@ abstract contract RMRKNestableInternal is
     function _updateOwnerAndClearApprovals(
         uint256 tokenId,
         uint256 destinationId,
-        address to,
-        bool isNft
+        address to
     ) internal {
         getNestableState()._DirectOwners[tokenId] = DirectOwner({
             ownerAddress: to,
-            tokenId: destinationId,
-            isNft: isNft
+            tokenId: destinationId
         });
 
         // Clear approvals from the previous owner
@@ -531,13 +494,9 @@ abstract contract RMRKNestableInternal is
 
     function _cleanApprovals(uint256 tokenId) internal virtual {}
 
-    function _exists(uint256 tokenId)
-        internal
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function _exists(
+        uint256 tokenId
+    ) internal view virtual override returns (bool) {
         return
             getNestableState()._DirectOwners[tokenId].ownerAddress !=
             address(0);
@@ -729,9 +688,10 @@ abstract contract RMRKNestableInternal is
         ns._activeChildren[tokenId].push(child);
     }
 
-    function _rejectAllChildren(uint256 tokenId, uint256 maxRejections)
-        internal
-    {
+    function _rejectAllChildren(
+        uint256 tokenId,
+        uint256 maxRejections
+    ) internal {
         NestableStorage.State storage ns = getNestableState();
         Child[] memory children = ns._pendingChildren[tokenId];
 
@@ -980,10 +940,10 @@ abstract contract RMRKNestableInternal is
         ] = index;
     }
 
-    function _isNestableContract(address contractAddress, uint256 errorIndex)
-        internal
-        view
-    {
+    function _isNestableContract(
+        address contractAddress,
+        uint256 errorIndex
+    ) internal view {
         if (!contractAddress.isContract()) revert RMRKIsNotContract();
         if (
             !IERC165(contractAddress).supportsInterface(

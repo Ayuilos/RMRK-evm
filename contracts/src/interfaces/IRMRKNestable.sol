@@ -8,7 +8,6 @@ interface IRMRKNestableEventsAndStruct {
     struct DirectOwner {
         uint256 tokenId;
         address ownerAddress;
-        bool isNft;
     }
 
     /**
