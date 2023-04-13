@@ -31,11 +31,10 @@ abstract contract RMRKMultiAssetInternal is
     ILightmMultiAssetEventsAndStruct
 {
     using Strings for uint256;
-    using RMRKLib for uint16[];
     using RMRKLib for uint64[];
     using RMRKLib for uint128[];
 
-    uint16 internal constant LOWEST_PRIORITY = type(uint16).max - 1;
+    uint64 internal constant LOWEST_PRIORITY = type(uint64).max - 1;
 
     function getMRState()
         internal
@@ -330,7 +329,7 @@ abstract contract RMRKMultiAssetInternal is
         _afterRejectAllAssets(tokenId);
     }
 
-    function _setPriority(uint256 tokenId, uint16[] memory priorities)
+    function _setPriority(uint256 tokenId, uint64[] memory priorities)
         internal
         virtual
     {
@@ -410,7 +409,7 @@ abstract contract RMRKMultiAssetInternal is
         internal
         view
         virtual
-        returns (uint16[] memory)
+        returns (uint64[] memory)
     {
         return getMRState()._activeAssetPriorities[tokenId];
     }
@@ -547,12 +546,12 @@ abstract contract RMRKMultiAssetInternal is
 
     function _afterRejectAllAssets(uint256 tokenId) internal virtual {}
 
-    function _beforeSetPriority(uint256 tokenId, uint16[] memory priorities)
+    function _beforeSetPriority(uint256 tokenId, uint64[] memory priorities)
         internal
         virtual
     {}
 
-    function _afterSetPriority(uint256 tokenId, uint16[] memory priorities)
+    function _afterSetPriority(uint256 tokenId, uint64[] memory priorities)
         internal
         virtual
     {}

@@ -42,7 +42,7 @@ library MultiAssetStorage {
         // Mapping of tokenId to all assets
         mapping(uint256 => uint64[]) _activeAssets;
         // Mapping of tokenId to an array of asset priorities
-        mapping(uint256 => uint16[]) _activeAssetPriorities;
+        mapping(uint256 => uint64[]) _activeAssetPriorities;
         // Mapping of tokenId to assetId to whether the token has this asset assigned
         mapping(uint256 => mapping(uint64 => bool)) _tokenAssets;
         // Mapping of tokenId to an array of pending assets

@@ -239,7 +239,7 @@ contract RMRKMultiAssetFacet is
     /**
      * @inheritdoc IRMRKMultiAsset
      */
-    function setPriority(uint256 tokenId, uint16[] memory priorities)
+    function setPriority(uint256 tokenId, uint64[] memory priorities)
         external
         virtual
         onlyApprovedForAssetsOrOwner(tokenId)
@@ -318,7 +318,7 @@ contract RMRKMultiAssetFacet is
         public
         view
         virtual
-        returns (uint16[] memory)
+        returns (uint64[] memory)
     {
         return _getActiveAssetPriorities(tokenId);
     }

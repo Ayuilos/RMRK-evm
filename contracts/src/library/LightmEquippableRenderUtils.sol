@@ -15,7 +15,7 @@ library LightmEquippableRenderUtils {
 
     struct ActiveCatalogRelatedAsset {
         uint64 id;
-        uint16 priority;
+        uint64 priority;
         address catalogAddress;
         uint64 targetSlotId;
         address targetCatalogAddress;
@@ -56,7 +56,7 @@ library LightmEquippableRenderUtils {
         IRMRKMultiAsset maTarget = IRMRKMultiAsset(target);
 
         uint64[] memory assets = maTarget.getActiveAssets(tokenId);
-        uint16[] memory priorities = maTarget.getActiveAssetPriorities(tokenId);
+        uint64[] memory priorities = maTarget.getActiveAssetPriorities(tokenId);
         uint256 len = assets.length;
         if (len == 0) {
             revert RMRKTokenHasNoAssets();

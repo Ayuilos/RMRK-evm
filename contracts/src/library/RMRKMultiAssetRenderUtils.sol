@@ -10,11 +10,11 @@ pragma solidity ^0.8.15;
 
 library RMRKMultiAssetRenderUtils {
     error RMRKTokenHasNoAssets();
-    uint16 private constant _LOWEST_POSSIBLE_PRIORITY = type(uint16).max;
+    uint64 private constant _LOWEST_POSSIBLE_PRIORITY = type(uint64).max;
 
     struct ActiveAsset {
         uint64 id;
-        uint16 priority;
+        uint64 priority;
         string metadataURI;
     }
 
@@ -32,7 +32,7 @@ library RMRKMultiAssetRenderUtils {
         IRMRKMultiAsset target_ = IRMRKMultiAsset(target);
 
         uint64[] memory assets = target_.getActiveAssets(tokenId);
-        uint16[] memory priorities = target_.getActiveAssetPriorities(
+        uint64[] memory priorities = target_.getActiveAssetPriorities(
             tokenId
         );
         uint256 len = assets.length;
@@ -123,7 +123,7 @@ library RMRKMultiAssetRenderUtils {
         returns (string memory)
     {
         IRMRKMultiAsset target_ = IRMRKMultiAsset(target);
-        uint16[] memory priorities = target_.getActiveAssetPriorities(
+        uint64[] memory priorities = target_.getActiveAssetPriorities(
             tokenId
         );
         uint64[] memory assets = target_.getActiveAssets(tokenId);
@@ -132,10 +132,10 @@ library RMRKMultiAssetRenderUtils {
             revert RMRKTokenHasNoAssets();
         }
 
-        uint16 maxPriority = _LOWEST_POSSIBLE_PRIORITY;
+        uint64 maxPriority = _LOWEST_POSSIBLE_PRIORITY;
         uint64 maxPriorityAsset;
         for (uint64 i; i < len; ) {
-            uint16 currentPrio = priorities[i];
+            uint64 currentPrio = priorities[i];
             if (currentPrio < maxPriority) {
                 maxPriority = currentPrio;
                 maxPriorityAsset = assets[i];
