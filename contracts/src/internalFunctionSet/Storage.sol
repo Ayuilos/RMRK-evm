@@ -124,6 +124,24 @@ library EquippableStorage {
     }
 }
 
+library ERC6220Storage {
+    struct State {
+        // mapping of uint64 ID to asset object
+        mapping(uint64 => uint64) _equippableGroupIds;
+        // Mapping of `equippableGroupId` to parent contract address and valid `slotId`.
+        mapping(uint64 => mapping(address => uint64)) _validParentSlots;
+    }
+
+    bytes32 constant STORAGE_POSITION = keccak256("erc6220.equippable.storage");
+
+    function getState() internal pure returns (State storage s) {
+        bytes32 position = STORAGE_POSITION;
+        assembly {
+            s.slot := position
+        }
+    }
+}
+
 library CollectionMetadataStorage {
     struct State {
         string _collectionMetadata;
