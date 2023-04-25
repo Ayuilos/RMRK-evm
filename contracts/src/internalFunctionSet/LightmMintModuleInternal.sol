@@ -18,6 +18,7 @@ abstract contract LightmMintModuleInternal is
     error LightmMintModulePublicMintNotAllowed();
     error LightmMintModuleInsufficientValue();
     error LightmMintModuleOverMintLimit();
+    error LightmMintModuleOverMaxSupply();
     error LightmMintModuleWrongMintStyle();
     error LightmMintModuleIncorrectMerkleProof();
 
@@ -65,6 +66,10 @@ abstract contract LightmMintModuleInternal is
         }
     }
 
+    function _maxSupply() internal view returns (uint256) {
+        return getLightmMintModuleState().config.maxSupply;
+    }
+
     function _totalSupply() internal view returns (uint256) {
         return getLightmMintModuleState().totalSupply;
     }
@@ -88,6 +93,12 @@ abstract contract LightmMintModuleInternal is
 
         if (to == address(0) && from != address(0)) {
             mms.totalSupply -= 1;
+        }
+
+        uint256 maxSupply = mms.config.maxSupply;
+
+        if (maxSupply != 0 && mms.totalSupply > maxSupply) {
+            revert LightmMintModuleOverMaxSupply();
         }
     }
 

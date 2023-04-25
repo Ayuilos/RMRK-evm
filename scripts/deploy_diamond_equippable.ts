@@ -449,6 +449,7 @@ export async function deployDiamondAndCutFacet(
         publicMintLimit: 2,
         // 0 -> linear, 1 -> assignable
         mintStyle: 1,
+        maxSupply: 0,
       },
     ],
     contractOwner.address,

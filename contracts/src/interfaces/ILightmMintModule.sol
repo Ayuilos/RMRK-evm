@@ -15,6 +15,7 @@ interface ILightmMintModuleStruct {
     struct MintConfig {
         uint256 whitelistMintPrice;
         uint256 publicMintPrice;
+        uint256 maxSupply;
         uint64 whitelistMintLimit;
         uint64 publicMintLimit;
         MintStyle mintStyle;
@@ -56,6 +57,11 @@ interface ILightmMintModule is ILightmMintModuleStruct {
      * @dev beneficiary can invoke this function to withdraw income
      */
     function withdraw() external;
+
+    /**
+     * @dev return the max supply of collection
+     */
+    function maxSupply() external returns (uint256 maxSupply);
 
     /**
      * @dev return the total supply of collection

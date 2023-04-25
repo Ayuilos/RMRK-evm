@@ -56,6 +56,13 @@ contract LightmMintModuleImplementer is
     /**
      * @inheritdoc ILightmMintModule
      */
+    function maxSupply() public view returns (uint256) {
+        return _maxSupply();
+    }
+
+    /**
+     * @inheritdoc ILightmMintModule
+     */
     function totalSupply() public view returns (uint256) {
         return _totalSupply();
     }
