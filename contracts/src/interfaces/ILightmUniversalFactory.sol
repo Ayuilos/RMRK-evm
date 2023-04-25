@@ -15,6 +15,7 @@ interface ILightmUniversalFactory {
         address nestableFacetAddress;
         address multiAssetFacetAddress;
         address equippableFacetAddress;
+        address rmrkEquippableFacetAddress;
         address collectionMetadataFacetAddress;
         address initContractAddress;
         address implContractAddress;
@@ -47,6 +48,8 @@ interface ILightmUniversalFactory {
     function multiAssetFacetAddress() external view returns (address);
 
     function equippableFacetAddress() external view returns (address);
+
+    function rmrkEquippableFacetAddress() external view returns (address);
 
     function collectionMetadataAddress() external view returns (address);
 

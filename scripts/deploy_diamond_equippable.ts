@@ -8,7 +8,7 @@ const PUBLIC_ACCOUNT_PRIVATE_KEY =
   '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const TRANSACTION_SIGNER_ADDRESS = '0xFBa50dD46Af71D60721C6E38F40Bce4d2416A34B';
 
-export const version = '0.1.1-alpha';
+export const version = '0.2.0-alpha';
 export const create2DeployerAddress = '0xcf2281070e6a50e4050694eef1a9a7376628d663';
 
 async function isHardhatChain() {
@@ -213,6 +213,7 @@ export async function oneTimeDeploy(
     'LightmEquippableMultiAssetFacet',
     'LightmEquippableNestableFacet',
     'LightmEquippableFacet',
+    'RMRKEquippableFacet',
     'RMRKCollectionMetadataFacet',
     'LightmMintModuleImplementer',
     'LightmImpl',
@@ -250,6 +251,11 @@ export async function oneTimeDeploy(
       },
     },
     LightmEquippableFacet: {
+      libraries: {
+        LightmValidatorLib: lightmValidatorLib.address,
+      },
+    },
+    RMRKEquippableFacet: {
       libraries: {
         LightmValidatorLib: lightmValidatorLib.address,
       },

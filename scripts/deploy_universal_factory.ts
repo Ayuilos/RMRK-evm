@@ -21,7 +21,7 @@ export default async function deployUniversalFactory(
 
   const constructorParams = ethers.utils.defaultAbiCoder.encode(
     [
-      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address equippableRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,address mintModuleAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
+      'tuple(address validatorLibAddress,address maRenderUtilsAddress,address equippableRenderUtilsAddress,address diamondCutFacetAddress,address diamondLoupeFacetAddress,address nestableFacetAddress,address multiAssetFacetAddress,address equippableFacetAddress,address rmrkEquippableFacetAddress,address collectionMetadataFacetAddress,address initContractAddress,address implContractAddress,address mintModuleAddress,tuple cuts(address facetAddress,uint8 action,bytes4[] functionSelectors)[])',
     ],
     [constructParams],
   );
@@ -90,9 +90,10 @@ async function deploy() {
     multiAssetFacetAddress: cut[1].facetAddress,
     nestableFacetAddress: cut[2].facetAddress,
     equippableFacetAddress: cut[3].facetAddress,
-    implContractAddress: cut[4].facetAddress,
-    collectionMetadataFacetAddress: cut[5].facetAddress,
-    mintModuleAddress: cut[6].facetAddress,
+    rmrkEquippableFacetAddress: cut[4].facetAddress,
+    implContractAddress: cut[5].facetAddress,
+    collectionMetadataFacetAddress: cut[6].facetAddress,
+    mintModuleAddress: cut[7].facetAddress,
     initContractAddress: lightmInitAddress,
     cuts: cut,
   });

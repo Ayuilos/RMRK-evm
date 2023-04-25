@@ -20,6 +20,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
     address private immutable _nestableFacetAddress;
     address private immutable _multiAssetFacetAddress;
     address private immutable _equippableFacetAddress;
+    address private immutable _rmrkEquippableFacetAddress;
     address private immutable _collectionMetadataFacetAddress;
     address private immutable _initContractAddress;
     address private immutable _implContractAddress;
@@ -36,6 +37,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         _nestableFacetAddress = params.nestableFacetAddress;
         _multiAssetFacetAddress = params.multiAssetFacetAddress;
         _equippableFacetAddress = params.equippableFacetAddress;
+        _rmrkEquippableFacetAddress = params.rmrkEquippableFacetAddress;
         _collectionMetadataFacetAddress = params.collectionMetadataFacetAddress;
         _initContractAddress = params.initContractAddress;
         _implContractAddress = params.implContractAddress;
@@ -82,6 +84,10 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     function equippableFacetAddress() external view returns (address) {
         return _equippableFacetAddress;
+    }
+
+    function rmrkEquippableFacetAddress() external view returns (address) {
+        return _rmrkEquippableFacetAddress;
     }
 
     function collectionMetadataAddress() external view returns (address) {
