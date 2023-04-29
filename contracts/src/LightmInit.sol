@@ -8,6 +8,7 @@ import {IDiamondLoupe} from "./interfaces/IDiamondLoupe.sol";
 import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
 import {IRMRKNestable, ILightmNestableExtension} from "./interfaces/ILightmNestable.sol";
 import {IRMRKMultiAsset, ILightmMultiAssetExtension, ILightmMultiAssetEventsAndStruct} from "./interfaces/ILightmMultiAsset.sol";
+import {IERC6220WithoutIERC5773} from "./interfaces/IERC6220.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata, IRMRKCollectionMetadataEventsAndStruct} from "./interfaces/IRMRKCollectionMetadata.sol";
 import {ILightmImplementer} from "./interfaces/ILightmImplementer.sol";
@@ -48,6 +49,9 @@ contract LightmInit is
         ds.supportedInterfaces[type(IRMRKMultiAsset).interfaceId] = true;
         ds.supportedInterfaces[
             type(ILightmMultiAssetExtension).interfaceId
+        ] = true;
+        ds.supportedInterfaces[
+            type(IERC6220WithoutIERC5773).interfaceId
         ] = true;
         ds.supportedInterfaces[type(ILightmEquippable).interfaceId] = true;
         ds.supportedInterfaces[
