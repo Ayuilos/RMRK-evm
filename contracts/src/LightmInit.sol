@@ -11,6 +11,8 @@ import {IRMRKMultiAsset, ILightmMultiAssetExtension, ILightmMultiAssetEventsAndS
 import {IERC6220WithoutIERC5773} from "./interfaces/IERC6220.sol";
 import {ILightmEquippable} from "./interfaces/ILightmEquippable.sol";
 import {IRMRKCollectionMetadata, IRMRKCollectionMetadataEventsAndStruct} from "./interfaces/IRMRKCollectionMetadata.sol";
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import {ERC2981Internal} from "./internalFunctionSet/ERC2981Internal.sol";
 import {ILightmImplementer} from "./interfaces/ILightmImplementer.sol";
 import {ILightmMintModule} from "./interfaces/ILightmMintModule.sol";
 import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataStorage, LightmImplStorage, LightmMintModuleStorage} from "./internalFunctionSet/Storage.sol";
@@ -22,13 +24,15 @@ import {ERC721Storage, MultiAssetStorage, EquippableStorage, CollectionMetadataS
 contract LightmInit is
     IRMRKCollectionMetadataEventsAndStruct,
     ILightmMultiAssetEventsAndStruct,
-    AccessControlInternal
+    AccessControlInternal,
+    ERC2981Internal
 {
     struct InitStruct {
         string name;
         string symbol;
         string fallbackURI;
         string collectionMetadataURI;
+        uint96 royaltyNumerator;
         ILightmMintModule.MintConfig mintConfig;
     }
 
@@ -57,6 +61,7 @@ contract LightmInit is
         ds.supportedInterfaces[
             type(IRMRKCollectionMetadata).interfaceId
         ] = true;
+        ds.supportedInterfaces[type(IERC2981).interfaceId] = true;
         ds.supportedInterfaces[type(IAccessControl).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmImplementer).interfaceId] = true;
         ds.supportedInterfaces[type(ILightmMintModule).interfaceId] = true;
@@ -69,6 +74,8 @@ contract LightmInit is
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface
 
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);
+
+        _setDefaultRoyalty(_owner, _initStruct.royaltyNumerator);
 
         LightmImplStorage.State storage lis = LightmImplStorage.getState();
         lis._owner = _owner;

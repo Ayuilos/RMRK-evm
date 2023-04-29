@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "../interfaces/IRMRKMultiAsset.sol";
 import "../interfaces/IRMRKNestable.sol";
 import "../interfaces/ILightmEquippable.sol";
@@ -185,6 +186,22 @@ library LightmMintModuleStorage {
     }
 
     bytes32 constant STORAGE_POSITION = keccak256("lightm.mint.module.storage");
+
+    function getState() internal pure returns (State storage s) {
+        bytes32 position = STORAGE_POSITION;
+        assembly {
+            s.slot := position
+        }
+    }
+}
+
+library ERC2981Storage {
+    struct State {
+        ERC2981.RoyaltyInfo _defaultRoyaltyInfo;
+        mapping(uint256 => ERC2981.RoyaltyInfo) _tokenRoyaltyInfo;
+    }
+
+    bytes32 constant STORAGE_POSITION = keccak256("erc2981.storage");
 
     function getState() internal pure returns (State storage s) {
         bytes32 position = STORAGE_POSITION;

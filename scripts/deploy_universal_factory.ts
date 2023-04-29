@@ -105,6 +105,7 @@ async function deploy() {
     symbol: 'TEST',
     fallbackURI: '',
     collectionMetadataURI: '',
+    royaltyNumerator: 350,
     mintConfig: {
       whitelistMintPrice: ethers.utils.parseEther('0.1'),
       publicMintPrice: ethers.utils.parseEther('0.15'),

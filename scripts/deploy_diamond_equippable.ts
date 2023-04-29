@@ -448,6 +448,7 @@ export async function deployDiamondAndCutFacet(
       'TEST',
       '',
       '',
+      350,
       {
         whitelistMintPrice: ethers.utils.parseEther('0.1'),
         publicMintPrice: ethers.utils.parseEther('0.15'),

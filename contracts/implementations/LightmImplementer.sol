@@ -6,15 +6,19 @@ import "../src/library/LibDiamond.sol";
 import "../src/internalFunctionSet/LightmEquippableInternal.sol";
 import "../src/internalFunctionSet/RMRKCollectionMetadataInternal.sol";
 import "../src/internalFunctionSet/LightmImplInternal.sol";
+import "../src/internalFunctionSet/ERC2981Internal.sol";
 import "../src/access/AccessControl.sol";
 import {ILightmImplementer} from "../src/interfaces/ILightmImplementer.sol";
+import {IERC2981WithoutIERC165} from "../src/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
 contract LightmImpl is
     ILightmImplementer,
+    IERC2981WithoutIERC165,
     AccessControl,
     LightmEquippableInternal,
     RMRKCollectionMetadataInternal,
+    ERC2981Internal,
     LightmImplInternal,
     Multicall
 {
@@ -75,5 +79,12 @@ contract LightmImpl is
         if (msg.sender == _ownerOf(tokenId)) {
             _acceptAsset(tokenId, assetId);
         }
+    }
+
+    function royaltyInfo(
+        uint256 tokenId,
+        uint256 salePrice
+    ) public view returns (address, uint256) {
+        return _royaltyInfo(tokenId, salePrice);
     }
 }
