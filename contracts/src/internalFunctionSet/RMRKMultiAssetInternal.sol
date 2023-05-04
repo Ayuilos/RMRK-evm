@@ -382,7 +382,10 @@ abstract contract RMRKMultiAssetInternal is
             s._assetReplacements[tokenId][assetId] = toBeReplacedId;
         }
 
-        emit AssetAddedToToken(tokenId, assetId, toBeReplacedId);
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = tokenId;
+
+        emit AssetAddedToTokens(tokenIds, assetId, toBeReplacedId);
 
         _afterAddAssetToToken(tokenId, assetId, toBeReplacedId);
     }
