@@ -1,7 +1,10 @@
 import { ethers } from 'hardhat';
-import { IRMRKCatalog } from '../typechain-types/contracts/implementations/LightmCatalogImplementer';
-import { LightmCatalogDeployedEvent } from '../typechain-types/contracts/src/LightmUniversalFactory';
+import {
+  IRMRKCatalog,
+  LightmCatalogDeployedEvent,
+} from '../typechain-types/contracts/implementations/LightmCatalogImplementer';
 import { getCatalogPartId } from './libraries/catalog';
+import { id } from 'ethers/lib/utils';
 
 const Slot = 1;
 const Fixed = 2;
@@ -33,13 +36,17 @@ export async function deployCatalog({
       const tx = await lightmUniversalFacotry.deployCatalog(metadataURI, type_);
       const txR = await tx.wait();
       const { events } = txR;
+      const catalogDeployedEventTopic = id('LightmCatalogDeployed()');
 
       if (events) {
         for (let i = 0; i < events.length; i++) {
-          const { args } = events[i] as LightmCatalogDeployedEvent;
+          const { address, topics } = events[i] as LightmCatalogDeployedEvent;
 
-          if (args && args.catalogAddress) {
-            return await ethers.getContractAt('LightmCatalogImplementer', args.catalogAddress);
+          if (topics[0] === catalogDeployedEventTopic) {
+            const catalogAddress = address;
+            const catalog = await ethers.getContractAt('LightmCatalogImplementer', catalogAddress);
+
+            return catalog;
           }
         }
       } else {
