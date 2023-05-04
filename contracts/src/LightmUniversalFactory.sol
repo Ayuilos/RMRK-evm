@@ -10,7 +10,7 @@ import {LightmCatalogImplementer} from "../implementations/LightmCatalogImplemen
 import "./interfaces/ILightmUniversalFactory.sol";
 
 contract LightmUniversalFactory is ILightmUniversalFactory {
-    string private constant VERSION = "0.1.1-alpha";
+    string private constant VERSION = "0.2.0-alpha";
 
     address private immutable _validatorLibAddress;
     address private immutable _maRenderUtilsAddress;
