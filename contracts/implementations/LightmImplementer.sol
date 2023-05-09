@@ -42,6 +42,10 @@ contract LightmImpl is
         owner = getLightmImplState()._owner;
     }
 
+    function setCollectionOwner(address target) external onlyOwner {
+        _setCollectionOwner(target);
+    }
+
     function setCollectionMetadata(string calldata newMetadata)
         external
         onlyOwner
