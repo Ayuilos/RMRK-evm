@@ -367,6 +367,9 @@ abstract contract RMRKMultiAssetInternal is
 
         if (assetId == uint64(0)) revert RMRKAssetNotFoundInStorage();
 
+        if (bytes(s._assets[assetId]).length == uint256(0))
+            revert RMRKNoAssetMatchingId();
+
         if (s._pendingAssets[tokenId].length >= 128)
             revert RMRKMaxPendingAssetsReached();
 
