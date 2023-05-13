@@ -110,6 +110,10 @@ abstract contract LightmEquippableInternal is
         EquipmentPointer storage pointer = getEquippableState()
             ._equipmentPointers[tokenId][catalogRelatedAssetId][slotId];
 
+        if (!pointer.exist) {
+            revert LightmSlotEquipmentNotExist();
+        }
+
         slotEquipment = _getSlotEquipmentByIndex(pointer.equipmentIndex);
 
         if (
@@ -133,6 +137,10 @@ abstract contract LightmEquippableInternal is
             ._childEquipmentPointers[childContract][childTokenId][
                 childCatalogRelatedAssetId
             ];
+
+        if (!pointer.exist) {
+            revert LightmSlotEquipmentNotExist();
+        }
 
         slotEquipment = _getSlotEquipmentByIndex(pointer.equipmentIndex);
 
@@ -277,16 +285,18 @@ abstract contract LightmEquippableInternal is
                     ][catalogRelatedAssetId][sE.slotId];
                     SlotEquipment memory existSE;
 
-                    if (es._slotEquipments.length > 0) {
-                        existSE = es._slotEquipments[pointer.equipmentIndex];
-                    }
+                    if (pointer.exist) {
+                        if (es._slotEquipments.length > 0) {
+                            existSE = es._slotEquipments[pointer.equipmentIndex];
+                        }
 
-                    if (
-                        existSE.slotId != uint64(0) ||
-                        existSE.childCatalogRelatedAssetId != uint64(0) ||
-                        existSE.child.contractAddress != address(0)
-                    ) {
-                        revert LightmSlotIsOccupied();
+                        if (
+                            existSE.slotId != uint64(0) ||
+                            existSE.childCatalogRelatedAssetId != uint64(0) ||
+                            existSE.child.contractAddress != address(0)
+                        ) {
+                            revert LightmSlotIsOccupied();
+                        }
                     }
                 }
 
@@ -328,6 +338,7 @@ abstract contract LightmEquippableInternal is
             es._equipmentPointers[tokenId][catalogRelatedAssetId][
                     sE.slotId
                 ] = EquipmentPointer({
+                exist: true,
                 equipmentIndex: sELen,
                 recordIndex: equippedSlotsLen
             });
@@ -343,6 +354,7 @@ abstract contract LightmEquippableInternal is
             es._childEquipmentPointers[childContract][childTokenId][
                     sE.childCatalogRelatedAssetId
                 ] = ILightmEquippableEventsAndStruct.EquipmentPointer({
+                exist: true,
                 equipmentIndex: sELen,
                 recordIndex: equippedChildBRAsLen
             });
@@ -380,6 +392,10 @@ abstract contract LightmEquippableInternal is
                 catalogRelatedAssetId
             ][slotId];
 
+            if (!ePointer.exist) {
+                revert LightmSlotEquipmentNotExist();
+            }
+
             SlotEquipment memory slotEquipment = es._slotEquipments[
                 ePointer.equipmentIndex
             ];
@@ -395,6 +411,10 @@ abstract contract LightmEquippableInternal is
                 EquipmentPointer memory cEPointer = es._childEquipmentPointers[
                     child.contractAddress
                 ][child.tokenId][slotEquipment.childCatalogRelatedAssetId];
+
+                if (!cEPointer.exist) {
+                    revert LightmSlotEquipmentNotExist();
+                }
 
                 uint64[] storage bRAIds = es._equippedChildCatalogRelatedAssets[
                     child.contractAddress

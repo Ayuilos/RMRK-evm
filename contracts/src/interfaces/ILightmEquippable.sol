@@ -49,6 +49,9 @@ interface ILightmEquippableEventsAndStruct {
     }
 
     struct EquipmentPointer {
+        // We need this property to mark if current pointer is valid
+        // because a valid pointer's value can also equal to default pointer's value
+        bool exist;
         uint256 equipmentIndex;
         uint256 recordIndex;
     }
