@@ -25,13 +25,19 @@ interface ILightmUniversalFactory {
 
     event LightmCollectionCreated(
         address indexed collectionAddress,
-        address indexed owner
+        address indexed owner,
+        bool indexed hasCustomCuts
     );
 
-    function deployCollection(LightmInit.InitStruct memory initStruct) external;
+    function deployCollection(
+        LightmInit.InitStruct memory initStruct,
+        IDiamondCut.FacetCut[] memory
+    ) external;
 
-    function deployCatalog(string memory metadataURI, string memory type_)
-        external;
+    function deployCatalog(
+        string memory metadataURI,
+        string memory type_
+    ) external;
 
     function version() external pure returns (string memory);
 

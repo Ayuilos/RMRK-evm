@@ -4,13 +4,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {LightmMintModuleStorage} from "./Storage.sol";
 import "../interfaces/ILightmMintModule.sol";
-import "./RMRKNestableInternal.sol";
+import "./LightmEquippableInternal.sol";
 import "./LightmImplInternal.sol";
 
 abstract contract LightmMintModuleInternal is
     ILightmMintModuleStruct,
     LightmImplInternal,
-    RMRKNestableInternal
+    LightmEquippableInternal
 {
     error LightmMintModuleNoWhitelistStageSet();
     error LightmMintModuleNoPublicStageSet();

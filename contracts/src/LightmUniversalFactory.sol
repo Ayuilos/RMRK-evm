@@ -106,9 +106,10 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         return _mintModuleAddress;
     }
 
-    function deployCollection(LightmInit.InitStruct calldata initStruct)
-        external
-    {
+    function deployCollection(
+        LightmInit.InitStruct calldata initStruct,
+        IDiamondCut.FacetCut[] calldata customCuts
+    ) external {
         Diamond instance = new Diamond(address(this), _diamondCutFacetAddress);
 
         address instanceAddress = address(instance);
@@ -123,12 +124,23 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
             )
         );
 
-        emit LightmCollectionCreated(instanceAddress, msg.sender);
+        bool hasCustomCuts = customCuts.length > 0;
+
+        if (hasCustomCuts) {
+            IDiamondCut(instanceAddress).diamondCut(customCuts, address(0), "");
+        }
+
+        emit LightmCollectionCreated(
+            instanceAddress,
+            msg.sender,
+            hasCustomCuts
+        );
     }
 
-    function deployCatalog(string calldata metadataURI, string calldata type_)
-        external
-    {
+    function deployCatalog(
+        string calldata metadataURI,
+        string calldata type_
+    ) external {
         LightmCatalogImplementer instance = new LightmCatalogImplementer(
             metadataURI,
             type_

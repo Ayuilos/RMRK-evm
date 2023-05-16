@@ -99,23 +99,31 @@ async function deploy() {
   });
   console.log(`UniversalFactory Address: ${factoryAddress} with ${counters} function selectors`);
 
-  const universalFactory = await ethers.getContractAt('LightmUniversalFactory', factoryAddress);
-  tx = await universalFactory.deployCollection({
-    name: 'Test',
-    symbol: 'TEST',
-    fallbackURI: '',
-    collectionMetadataURI: '',
-    royaltyNumerator: 350,
-    mintConfig: {
-      whitelistMintPrice: ethers.utils.parseEther('0.1'),
-      publicMintPrice: ethers.utils.parseEther('0.15'),
-      whitelistMintLimit: 1,
-      publicMintLimit: 2,
-      // 0 -> linear, 1 -> assignable
-      mintStyle: 1,
-      maxSupply: 0,
-    },
+  const filePath = './scripts/universalFactoryAddress.json';
+  await writeFile(filePath, JSON.stringify({ address: factoryAddress }), {
+    encoding: 'utf-8',
   });
+
+  const universalFactory = await ethers.getContractAt('LightmUniversalFactory', factoryAddress);
+  tx = await universalFactory.deployCollection(
+    {
+      name: 'Test',
+      symbol: 'TEST',
+      fallbackURI: '',
+      collectionMetadataURI: '',
+      royaltyNumerator: 350,
+      mintConfig: {
+        whitelistMintPrice: ethers.utils.parseEther('0.1'),
+        publicMintPrice: ethers.utils.parseEther('0.15'),
+        whitelistMintLimit: 1,
+        publicMintLimit: 2,
+        // 0 -> linear, 1 -> assignable
+        mintStyle: 1,
+        maxSupply: 0,
+      },
+    },
+    [],
+  );
   const txRec = await tx.wait();
   const { events } = txRec;
   const createdEvent = events?.find(
