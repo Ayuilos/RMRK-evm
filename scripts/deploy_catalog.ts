@@ -6,8 +6,8 @@ import {
 import { getCatalogPartId } from './libraries/catalog';
 import { id } from 'ethers/lib/utils';
 
-const Slot = 1;
-const Fixed = 2;
+export const Slot = 1;
+export const Fixed = 2;
 
 /**
  * @notice By giving `lightmUniversalFactoryAddress` in param object, you will deploy catalog through `LightmUniversalFactory`,
@@ -19,10 +19,12 @@ export async function deployCatalog({
   metadataURI,
   type_,
   lightmUniversalFactoryAddress,
+  parts,
 }: {
   metadataURI: string;
   type_: string;
   lightmUniversalFactoryAddress?: string;
+  parts?: IRMRKCatalog.IntakeStructStruct[];
 }) {
   const signer = (await ethers.getSigners())[0];
 
@@ -66,48 +68,48 @@ export async function deployCatalog({
 
   console.log('Deploy catalog successfully, address is', catalog.address);
 
-  // Why we design partId in this way: https://lightm.notion.site/Recommended-allocation-way-for-Part-ID-of-Catalog-1e471ff9f38f49c191f68db6845bc353
-  const part0: IRMRKCatalog.IntakeStructStruct = {
-    partId: getCatalogPartId(1, 1, 0),
-    part: {
-      itemType: Fixed,
-      z: 1,
-      equippable: [],
-      metadataURI: 'ipfs://bafkreifpjb6ezuidaln2vz63ma4cxedewjhu73omepcd4asv35nuzv7blq',
-    },
-  };
-
-  const part1: IRMRKCatalog.IntakeStructStruct = {
-    partId: getCatalogPartId(2, 1, 1),
-    part: {
-      itemType: Slot,
-      z: 1,
-      equippable: [],
-      metadataURI: 'ipfs://bafkreihfdwwxn6ugoswbp7or34ue4nyziqw6smb755l2xqsvsisxhorih4',
-    },
-  };
-
-  const part2: IRMRKCatalog.IntakeStructStruct = {
-    partId: getCatalogPartId(3, 1, 1),
-    part: {
-      itemType: Slot,
-      z: 1,
-      equippable: [],
-      metadataURI: 'ipfs://bafkreidaahujz2pjf6xzpcpctrms6gjxtrbomdz7oce7rdtyafrxm7uawi',
-    },
-  };
-
-  let tx = await catalog.addPartList([part0, part1, part2]);
-  await tx.wait();
-
-  tx = await catalog.setEquippableToAll(part1.partId);
-  await tx.wait();
+  if (parts) {
+    const tx = await catalog.addPartList(parts);
+    await tx.wait();
+  }
 
   return catalog.address;
 }
 
-deployCatalog({
-  metadataURI: 'ipfs://bafkreifkv3gdauc756ln4tvgv23eo4yjdkrbbfqghlsvrx6w5equu5l2xy',
-  type_: 'image',
-  lightmUniversalFactoryAddress: process.env.LIGHTM_UNIVERSAL_FACTORY_ADDRESS,
-});
+// Why we design partId in this way: https://lightm.notion.site/Recommended-allocation-way-for-Part-ID-of-Catalog-1e471ff9f38f49c191f68db6845bc353
+const part0: IRMRKCatalog.IntakeStructStruct = {
+  partId: getCatalogPartId(1, 1, 0),
+  part: {
+    itemType: Fixed,
+    z: 1,
+    equippable: [],
+    metadataURI: 'ipfs://bafkreifpjb6ezuidaln2vz63ma4cxedewjhu73omepcd4asv35nuzv7blq',
+  },
+};
+
+const part1: IRMRKCatalog.IntakeStructStruct = {
+  partId: getCatalogPartId(2, 1, 1),
+  part: {
+    itemType: Slot,
+    z: 1,
+    equippable: [],
+    metadataURI: 'ipfs://bafkreihfdwwxn6ugoswbp7or34ue4nyziqw6smb755l2xqsvsisxhorih4',
+  },
+};
+
+const part2: IRMRKCatalog.IntakeStructStruct = {
+  partId: getCatalogPartId(3, 1, 1),
+  part: {
+    itemType: Slot,
+    z: 1,
+    equippable: [],
+    metadataURI: 'ipfs://bafkreidaahujz2pjf6xzpcpctrms6gjxtrbomdz7oce7rdtyafrxm7uawi',
+  },
+};
+
+// deployCatalog({
+//   metadataURI: 'ipfs://bafkreifkv3gdauc756ln4tvgv23eo4yjdkrbbfqghlsvrx6w5equu5l2xy',
+//   type_: 'image',
+//   lightmUniversalFactoryAddress: process.env.LIGHTM_UNIVERSAL_FACTORY_ADDRESS,
+//   parts: [part0, part1, part2],
+// });
