@@ -12,3 +12,5 @@ Check [Deployment](./README.md/#deployment). And I've prepared an all-in-one scr
 1. `npx hardhat node`
 2. `npx hardhat run --network localhost ./scripts/deploy_universal_factory.ts`
 3. `npx hardhat run --network localhost ./scripts/deploy_demo_all_in_one.ts`
+
+You also need to [get some test ETH on Sepolia](https://www.google.com/search?q=sepolia+faucet).
