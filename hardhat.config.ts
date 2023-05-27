@@ -10,10 +10,10 @@ import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 
 // If facing the fetching error while doing contract verifing, uncomment the code below
-// const { ProxyAgent, setGlobalDispatcher } = require("undici");
-// const proxyUrl = 'http://127.0.0.1:7890'; // change to yours, With the global proxy enabled, change the proxyUrl to your own proxy link. The port may be different for each client.
-// const proxyAgent = new ProxyAgent(proxyUrl);
-// setGlobalDispatcher(proxyAgent);
+const { ProxyAgent, setGlobalDispatcher } = require("undici");
+const proxyUrl = 'http://127.0.0.1:8889'; // change to yours, With the global proxy enabled, change the proxyUrl to your own proxy link. The port may be different for each client.
+const proxyAgent = new ProxyAgent(proxyUrl);
+setGlobalDispatcher(proxyAgent);
 
 dotenv.config();
 
@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       mining: {
         auto: false,
-        interval: [500, 2000],
+        interval: [200, 800],
       },
     },
     ropsten: {
@@ -77,7 +77,8 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     sepolia: {
-      url: process.env.SEPOLIA_URL || 'http://127.0.0.1:8545',
+      url: 'https://eth-sepolia.public.blastapi.io',
+      chainId: 11_155_111,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     scrollAlpha: {
