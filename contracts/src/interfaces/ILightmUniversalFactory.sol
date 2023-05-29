@@ -23,15 +23,22 @@ interface ILightmUniversalFactory {
         IDiamondCut.FacetCut[] cuts;
     }
 
+    struct CustomInitStruct {
+        IDiamondCut.FacetCut[] cuts;
+        address initAddress;
+        bytes initCallData;
+    }
+
     event LightmCollectionCreated(
         address indexed collectionAddress,
         address indexed owner,
-        bool indexed hasCustomCuts
+        bool indexed isCustomized,
+        CustomInitStruct customInitStruct
     );
 
     function deployCollection(
         LightmInit.InitStruct memory initStruct,
-        IDiamondCut.FacetCut[] memory
+        CustomInitStruct memory customInitStruct
     ) external;
 
     function deployCatalog(

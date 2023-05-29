@@ -122,7 +122,7 @@ async function deploy() {
         maxSupply: 0,
       },
     },
-    [],
+    { cuts: [], initAddress: ethers.constants.AddressZero, initCallData: [] },
   );
   const txRec = await tx.wait();
   const { events } = txRec;

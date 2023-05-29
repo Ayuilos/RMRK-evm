@@ -10,7 +10,7 @@ import {LightmCatalogImplementer} from "../implementations/LightmCatalogImplemen
 import "./interfaces/ILightmUniversalFactory.sol";
 
 contract LightmUniversalFactory is ILightmUniversalFactory {
-    string private constant VERSION = "0.2.0-alpha";
+    string private constant VERSION = "0.3.0-alpha";
 
     address private immutable _validatorLibAddress;
     address private immutable _maRenderUtilsAddress;
@@ -108,7 +108,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
     function deployCollection(
         LightmInit.InitStruct calldata initStruct,
-        IDiamondCut.FacetCut[] calldata customCuts
+        CustomInitStruct calldata customInitStruct
     ) external {
         Diamond instance = new Diamond(address(this), _diamondCutFacetAddress);
 
@@ -124,16 +124,21 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
             )
         );
 
-        bool hasCustomCuts = customCuts.length > 0;
+        IDiamondCut.FacetCut[] memory customCuts = customInitStruct.cuts;
+        address customInitAddress = customInitStruct.initAddress;
+        bytes memory customInitData = customInitStruct.initCallData;
 
-        if (hasCustomCuts) {
-            IDiamondCut(instanceAddress).diamondCut(customCuts, address(0), "");
+        bool isCustomized = customCuts.length > 0 || customInitAddress != address(0);
+
+        if (isCustomized) {
+            IDiamondCut(instanceAddress).diamondCut(customCuts, customInitAddress, customInitData);
         }
 
         emit LightmCollectionCreated(
             instanceAddress,
             msg.sender,
-            hasCustomCuts
+            isCustomized,
+            customInitStruct
         );
     }
 
