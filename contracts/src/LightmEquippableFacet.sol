@@ -119,7 +119,7 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
         uint64 catalogRelatedAssetId,
         SlotEquipment[] memory slotEquipments,
         bool doMoreCheck
-    ) public virtual {
+    ) public virtual onlyApprovedOrOwner(tokenId) {
         _addSlotEquipments(
             tokenId,
             catalogRelatedAssetId,
@@ -132,7 +132,7 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
         uint256 tokenId,
         uint64 catalogRelatedAssetId,
         uint64[] memory slotIds
-    ) public virtual {
+    ) public virtual onlyApprovedOrOwner(tokenId) {
         _removeSlotEquipments(tokenId, catalogRelatedAssetId, slotIds);
     }
 
@@ -141,6 +141,15 @@ contract LightmEquippableFacet is ILightmEquippable, LightmEquippableInternal {
         uint256 childTokenId,
         uint64[] memory childCatalogRelatedAssetIds
     ) public virtual {
+        // We don't judge if child contract's direct owner is current contract
+        // because the stored equipments data maybe incorrect
+
+        (, uint256 tokenId, ) = IRMRKNestable(childContract).directOwnerOf(
+            childTokenId
+        );
+
+        _onlyApprovedOrOwner(tokenId);
+
         _removeSlotEquipments(
             childContract,
             childTokenId,
