@@ -6,6 +6,12 @@ import "../interfaces/IERC6220.sol";
 import {ERC6220Storage} from "./Storage.sol";
 import "./LightmEquippableInternal.sol";
 
+error RMRKEquippableEquipNotAllowedByCatalog();
+error RMRKNotEquipped();
+error RMRKSlotAlreadyUsed();
+error RMRKTargetAssetCannotReceiveSlot();
+error RMRKTokenCannotBeEquippedWithAssetIntoSlot();
+
 contract RMRKEquippableInternal is
     IERC6220EventsAndStruct,
     LightmEquippableInternal
@@ -51,15 +57,58 @@ contract RMRKEquippableInternal is
     }
 
     function _equip(IntakeEquip memory data) internal virtual {
-        _beforeEquip(data);
-
         uint256 tokenId = data.tokenId;
         uint64 assetId = data.assetId;
         uint64 slotPartId = data.slotPartId;
         uint64 childAssetId = data.childAssetId;
-        SlotEquipment[] memory slotEquipments = new SlotEquipment[](1);
+        ILightmEquippable.CatalogRelatedAsset
+            memory targetCRA = _getCatalogRelatedAsset(assetId);
+
+        {
+            SlotEquipment memory existSE = _getSlotEquipment(
+                tokenId,
+                assetId,
+                slotPartId
+            );
+
+            if (existSE.child.contractAddress != address(0)) {
+                revert RMRKSlotAlreadyUsed();
+            }
+        }
+
+        {
+            (, bool exist) = targetCRA.partIds.indexOf(slotPartId);
+
+            if (!exist) {
+                revert RMRKTargetAssetCannotReceiveSlot();
+            }
+        }
+
         IRMRKNestable.Child memory child = _childOf(tokenId, data.childIndex);
 
+        // Check from child perspective intention to be used in part
+        // We add reentrancy guard because of this call, it happens before updating state
+        if (
+            !IERC6220WithoutIERC5773(child.contractAddress)
+                .canTokenBeEquippedWithAssetIntoSlot(
+                    address(this),
+                    child.tokenId,
+                    data.childAssetId,
+                    slotPartId
+                )
+        ) revert RMRKTokenCannotBeEquippedWithAssetIntoSlot();
+
+        // Check from catalog perspective
+        if (
+            !IRMRKCatalog(targetCRA.catalogAddress).checkIsEquippable(
+                slotPartId,
+                child.contractAddress
+            )
+        ) revert RMRKEquippableEquipNotAllowedByCatalog();
+
+        _beforeEquip(data);
+
+        SlotEquipment[] memory slotEquipments = new SlotEquipment[](1);
         slotEquipments[0] = SlotEquipment({
             tokenId: tokenId,
             catalogRelatedAssetId: assetId,
@@ -94,14 +143,18 @@ contract RMRKEquippableInternal is
         uint64 assetId,
         uint64 slotPartId
     ) internal virtual {
-        _beforeUnequip(tokenId, assetId, slotPartId);
-
         SlotEquipment memory slotEquipment = _getSlotEquipment(
             tokenId,
             assetId,
             slotPartId
         );
         IRMRKNestable.Child memory child = slotEquipment.child;
+
+        if (child.contractAddress == address(0)) {
+            revert RMRKNotEquipped();
+        }
+
+        _beforeUnequip(tokenId, assetId, slotPartId);
 
         uint64[] memory slotIds = new uint64[](1);
         slotIds[0] = slotPartId;
@@ -193,14 +246,16 @@ contract RMRKEquippableInternal is
 
     // --------------------- Getting Extended Assets ---------------------
 
-    function _getAssetAndEquippableData(
-        uint256,
-        uint64 assetId
-    )
+    function _getAssetAndEquippableData(uint256, uint64 assetId)
         public
         view
         virtual
-        returns (string memory, uint64, address, uint64[] memory)
+        returns (
+            string memory,
+            uint64,
+            address,
+            uint64[] memory
+        )
     {
         CatalogRelatedAsset memory cra = _getCatalogRelatedAsset(assetId);
 
