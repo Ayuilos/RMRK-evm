@@ -114,6 +114,20 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
 
         address instanceAddress = address(instance);
 
+        IDiamondCut.FacetCut[] memory customCuts = customInitStruct.cuts;
+        address customInitAddress = customInitStruct.initAddress;
+        bytes memory customInitData = customInitStruct.initCallData;
+
+        bool isCustomized = customCuts.length > 0 ||
+            customInitAddress != address(0);
+
+        emit LightmCollectionCreated(
+            instanceAddress,
+            msg.sender,
+            isCustomized,
+            customInitStruct
+        );
+
         IDiamondCut(instanceAddress).diamondCut(
             _cuts,
             _initContractAddress,
@@ -124,28 +138,18 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
             )
         );
 
-        IDiamondCut.FacetCut[] memory customCuts = customInitStruct.cuts;
-        address customInitAddress = customInitStruct.initAddress;
-        bytes memory customInitData = customInitStruct.initCallData;
-
-        bool isCustomized = customCuts.length > 0 || customInitAddress != address(0);
-
         if (isCustomized) {
-            IDiamondCut(instanceAddress).diamondCut(customCuts, customInitAddress, customInitData);
+            IDiamondCut(instanceAddress).diamondCut(
+                customCuts,
+                customInitAddress,
+                customInitData
+            );
         }
-
-        emit LightmCollectionCreated(
-            instanceAddress,
-            msg.sender,
-            isCustomized,
-            customInitStruct
-        );
     }
 
-    function deployCatalog(
-        string calldata metadataURI,
-        string calldata type_
-    ) external {
+    function deployCatalog(string calldata metadataURI, string calldata type_)
+        external
+    {
         LightmCatalogImplementer instance = new LightmCatalogImplementer(
             metadataURI,
             type_
