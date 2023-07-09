@@ -230,7 +230,7 @@ contract RMRKEquippableInternal is
         uint256 tokenId,
         uint64 assetId,
         uint64 slotId
-    ) public view virtual returns (bool) {
+    ) internal view virtual returns (bool) {
         ERC6220Storage.State storage res = getRMRKEquippableState();
 
         uint64 equippableGroupId = res._equippableGroupIds[assetId];
@@ -247,7 +247,7 @@ contract RMRKEquippableInternal is
     // --------------------- Getting Extended Assets ---------------------
 
     function _getAssetAndEquippableData(uint256, uint64 assetId)
-        public
+        internal
         view
         virtual
         returns (
@@ -275,7 +275,7 @@ contract RMRKEquippableInternal is
         uint256 tokenId,
         address targetCatalogAddress,
         uint64 slotPartId
-    ) public view virtual returns (Equipment memory) {
+    ) internal view virtual returns (Equipment memory) {
         SlotEquipment memory slotEquipment;
         uint64[] memory activeCRAIds = _getActiveCatalogRelatedAssets(tokenId);
         uint256 len = activeCRAIds.length;
