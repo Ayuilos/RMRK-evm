@@ -114,7 +114,7 @@ abstract contract LightmMintModuleInternal is
         address to,
         MintStage mintStage,
         MintStyle mintStyle
-    ) private view {
+    ) internal view virtual {
         LightmMintModuleStorage.State storage mms = getLightmMintModuleState();
         MintConfig memory config = mms.config;
 
@@ -162,7 +162,7 @@ abstract contract LightmMintModuleInternal is
     /**
      * @dev Return extra value to caller
      */
-    function _returnValue(address to, MintStage mintStage) private {
+    function _returnValue(address to, MintStage mintStage) internal virtual {
         MintConfig memory config = getLightmMintModuleState().config;
         uint256 toBeReturnedValue;
         if (mintStage == MintStage.publicStage) {
@@ -176,7 +176,7 @@ abstract contract LightmMintModuleInternal is
         }
     }
 
-    function _count(address to, MintStage mintStage) private {
+    function _count(address to, MintStage mintStage) internal virtual {
         LightmMintModuleStorage.State storage mms = getLightmMintModuleState();
         if (mintStage == MintStage.publicStage) {
             unchecked {
@@ -189,7 +189,7 @@ abstract contract LightmMintModuleInternal is
         }
     }
 
-    function _directMint(address to, MintStage mintStage) internal {
+    function _directMint(address to, MintStage mintStage) internal virtual {
         _couldMint(to, mintStage, MintStyle.linear);
 
         uint256 totalSupply = _totalSupply();
@@ -205,7 +205,7 @@ abstract contract LightmMintModuleInternal is
         address to,
         uint256 tokenId,
         MintStage mintStage
-    ) internal {
+    ) internal virtual {
         _couldMint(to, mintStage, MintStyle.assignable);
 
         _safeMint(to, tokenId);
@@ -217,6 +217,7 @@ abstract contract LightmMintModuleInternal is
 
     function _mintByProvidingProof(address to, bytes32[] memory proof)
         internal
+        virtual
     {
         bytes32 root = getLightmMintModuleState().whitelistMerkleProofRoot;
         bool eligible = MerkleProof.verify(
@@ -236,7 +237,7 @@ abstract contract LightmMintModuleInternal is
         uint256 tokenId,
         address to,
         bytes32[] memory proof
-    ) internal {
+    ) internal virtual {
         bytes32 root = getLightmMintModuleState().whitelistMerkleProofRoot;
         bool eligible = MerkleProof.verify(
             proof,
