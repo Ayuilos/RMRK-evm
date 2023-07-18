@@ -3,10 +3,12 @@
 Lightm is a [RMRK EVM](https://github.com/rmrk-team/evm) fork, and it uses the [EIP-2535](https://eips.ethereum.org/EIPS/eip-2535)'s [diamond 2](https://github.com/mudgen/diamond-2-hardhat) implementation to implement [RMRK Spec](https://github.com/rmrk-team/rmrk-spec/tree/master/standards/abstract).
 
 ## Note
+
 - We have different implementations with RMRK on Equippable concept.
 - We don't have test part now, but we will add it in the future.
 
 ## Local Development
+
 - Run `npm i` or `yarn` to install deps first.
 - Run `npx hardhat node` to start a local hardhat node.
 - Follow [Deployment](#deployment)
@@ -19,7 +21,7 @@ Use `npx hardhat run --network localhost ./scripts/[script-name].ts` to run scri
 
 ### Full-automatic on-chain deployment
 
-The `Full-automatic on-chain deployment` is a more appropriate approach for creators whom cannot write code. Contracts containing the same implementation code on different chains should be deployed only once. 
+The `Full-automatic on-chain deployment` is a more appropriate approach for creators whom cannot write code. Contracts containing the same implementation code on different chains should be deployed only once.
 
 **Before you invoke the script below in a non-local development environment, make sure that no contract has been deployed on this chain(Check if `Create2Deployer` is deployed on target chain, its address is `0xcf2281070e6a50e4050694eef1a9a7376628d663`), otherwise this is a redundant action (except you wanna deploy your own custom factory)**.
 
@@ -37,7 +39,7 @@ Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable
 | [LightmEquippableNestableFacet](./contracts/src/LightmEquippableNestableFacet.sol)         | The nestable part of equipment function supported facet                                                                                                                                                                                                                                                                                                                                       | yes       |
 | [LightmEquippableMultiAssetFacet](./contracts/src/LightmEquippableMultiAssetFacet.sol)     | The multi-asset part of equipment function supported facet                                                                                                                                                                                                                                                                                                                                    | yes       |
 | [LightmEquippableFacet](./contracts/src/LightmEquippableFacet.sol)                         | The equippable part of equipment function supported facet                                                                                                                                                                                                                                                                                                                                     | yes       |
-| [RMRKEquippableFacet](./contracts/src/RMRKEquippableFacet.sol)                             | The equippable part implement in [ERC-6220](https://eips.ethereum.org/EIPS/eip-6220) way which sharing storage with `LightmEquippableFacet`                                                                                                                                                                                                                                              | yes       |
+| [RMRKEquippableFacet](./contracts/src/RMRKEquippableFacet.sol)                             | The equippable part implement in [ERC-6220](https://eips.ethereum.org/EIPS/eip-6220) way which sharing storage with `LightmEquippableFacet`                                                                                                                                                                                                                                                   | yes       |
 | [RMRKCollectionMetadataFacet](./contracts/src/RMRKCollectionMetadataFacet.sol)             | The collection-metadata part of RMRK NFT                                                                                                                                                                                                                                                                                                                                                      | yes       |
 | [Diamond](./contracts/src/Diamond.sol)                                                     | The real contract that store all state                                                                                                                                                                                                                                                                                                                                                        | no        |
 | [LightmInit](./contracts/src/LightmInit.sol)                                               | The diamond raw facet used to initializes the state of the contract                                                                                                                                                                                                                                                                                                                           | yes       |
@@ -46,6 +48,7 @@ Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable
 | [LightmCatalogImplementer](./contracts//implementations/LightmCatalogImplementer.sol)      | The catalog implementer, you could call `deployCatalog` function in `UniversalFactory` to deploy it, and you can also check [Deploy Catalog Script](./scripts/deploy_catalog.ts) to deploy it yourself (But in this way, the Catalog you deployed can not be displayed on Lightm UI temporarily). <br />For more about what is `Catalog` please check https://docs.rmrk.app/lego25-equippable | no        |
 
 #### More about mint module
+
 - You could choose how to mint token:
   - linear (for example: from 1 -> 9999, can not specify an id)
   - assignable (can specify an id)
@@ -57,3 +60,9 @@ Run [./scripts/deploy_diamond_equippable.ts](./scripts/deploy_diamond_equippable
   - whitelist mint
     - same with public mint...
     - target address assignable (due to the implementation of whitelist, if you're willing, you could pay for your whitelist friend)
+
+### About Upgradable
+
+The collection created by `LightmUniversalFactory`'s `deployCollection` function will be non-upgradable by default.
+
+But you could write a custom init contract to take over the upgrade permission as `deployCollection` has `customInitStruct` allowing you to do a degree of customization.
