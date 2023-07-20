@@ -87,7 +87,8 @@ interface IRMRKNestableEventsAndStruct {
         uint256 childIndex,
         address indexed childAddress,
         uint256 indexed childId,
-        bool fromPending
+        bool fromPending,
+        bool toZero
     );
 }
 

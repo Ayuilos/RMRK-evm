@@ -648,7 +648,8 @@ abstract contract RMRKNestableInternal is
             index,
             childContractAddress,
             childTokenId,
-            isPending
+            isPending,
+            to == address(0)
         );
 
         _afterTransferChild(
