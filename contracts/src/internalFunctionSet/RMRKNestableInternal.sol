@@ -603,7 +603,7 @@ abstract contract RMRKNestableInternal is
         Child[] storage children = isPending
             ? ns._pendingChildren[tokenId]
             : ns._activeChildren[tokenId];
-
+        {
         Child memory child = children[index];
 
         if (
@@ -611,6 +611,7 @@ abstract contract RMRKNestableInternal is
             child.tokenId != childTokenId
         ) {
             revert RMRKParentChildMismatch();
+            }
         }
 
         _beforeTransferChild(
@@ -633,10 +634,10 @@ abstract contract RMRKNestableInternal is
                     childTokenId
                 );
             } else {
-                IRMRKNestable(child.contractAddress).nestTransferFrom(
+                IRMRKNestable(childContractAddress).nestTransferFrom(
                     address(this),
                     to,
-                    child.tokenId,
+                    childTokenId,
                     destinationId,
                     data
                 );
