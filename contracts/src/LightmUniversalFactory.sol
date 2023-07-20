@@ -107,10 +107,13 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
     }
 
     function deployCollection(
+        bytes32 salt,
         LightmInit.InitStruct calldata initStruct,
         CustomInitStruct calldata customInitStruct
     ) external {
-        Diamond instance = new Diamond(address(this), _diamondCutFacetAddress);
+        Diamond instance = salt != bytes32(0)
+            ? new Diamond{salt: salt}(address(this), _diamondCutFacetAddress)
+            : new Diamond(address(this), _diamondCutFacetAddress);
 
         address instanceAddress = address(instance);
 
@@ -124,6 +127,7 @@ contract LightmUniversalFactory is ILightmUniversalFactory {
         emit LightmCollectionCreated(
             instanceAddress,
             msg.sender,
+            salt,
             isCustomized,
             customInitStruct
         );

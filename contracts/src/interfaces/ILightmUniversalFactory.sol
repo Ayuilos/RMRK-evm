@@ -32,11 +32,13 @@ interface ILightmUniversalFactory {
     event LightmCollectionCreated(
         address indexed collectionAddress,
         address indexed owner,
+        bytes32 salt,
         bool indexed isCustomized,
         CustomInitStruct customInitStruct
     );
 
     function deployCollection(
+        bytes32 salt,
         LightmInit.InitStruct memory initStruct,
         CustomInitStruct memory customInitStruct
     ) external;

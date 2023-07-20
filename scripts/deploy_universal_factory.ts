@@ -106,6 +106,7 @@ async function deploy() {
 
   const universalFactory = await ethers.getContractAt('LightmUniversalFactory', factoryAddress);
   tx = await universalFactory.deployCollection(
+    ethers.constants.HashZero,
     {
       name: 'Test',
       symbol: 'TEST',
