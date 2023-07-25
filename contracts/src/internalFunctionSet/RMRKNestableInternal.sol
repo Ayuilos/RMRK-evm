@@ -236,7 +236,7 @@ abstract contract RMRKNestableInternal is
                 tokenId: destinationId
             });
 
-            _sendToNFT(address(0), to, 0, destinationId, tokenId, data);
+            _sendToNFT(to, destinationId, tokenId, data);
         } else {
             getNestableState()._DirectOwners[tokenId] = DirectOwner({
                 ownerAddress: to,
@@ -245,6 +245,7 @@ abstract contract RMRKNestableInternal is
         }
 
         emit Transfer(address(0), to, tokenId);
+        emit NestTransfer(address(0), to, 0, destinationId, tokenId);
 
         _afterTokenTransfer(address(0), to, tokenId);
         _afterNestedTokenTransfer(
@@ -279,9 +280,7 @@ abstract contract RMRKNestableInternal is
     }
 
     function _sendToNFT(
-        address from,
         address to,
-        uint256 fromTokenId,
         uint256 destinationId,
         uint256 tokenId,
         bytes memory data
@@ -289,7 +288,6 @@ abstract contract RMRKNestableInternal is
         IRMRKNestable destContract = IRMRKNestable(to);
 
         destContract.addChild(destinationId, tokenId, data);
-        emit NestTransfer(from, to, fromTokenId, destinationId, tokenId);
     }
 
     // ------------------------ BURNING ------------------------
@@ -434,9 +432,11 @@ abstract contract RMRKNestableInternal is
         getState()._balances[to] += 1;
 
         if (isNft)
-            _sendToNFT(from, to, fromTokenId, destinationId, tokenId, data);
+            _sendToNFT(to, destinationId, tokenId, data);
 
         emit Transfer(from, to, tokenId);
+        emit NestTransfer(from, to, fromTokenId, destinationId, tokenId);
+
         _afterTokenTransfer(from, to, tokenId);
         _afterNestedTokenTransfer(
             from,
