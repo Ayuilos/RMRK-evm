@@ -8,9 +8,9 @@ interface ILightmImplementerEventsAndStruct {
 }
 
 interface ILightmImplementer is ILightmImplementerEventsAndStruct {
-    function getCollectionOwner() external view returns (address owner);
+    function owner() external view returns (address owner);
 
-    function setCollectionOwner(address target) external;
+    function setOwner(address target) external;
 
     function setCollectionMetadata(string calldata newMetadata) external;
 

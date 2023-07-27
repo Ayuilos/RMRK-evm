@@ -38,11 +38,11 @@ contract LightmImpl is
         _;
     }
 
-    function getCollectionOwner() public view returns (address owner) {
-        owner = getLightmImplState()._owner;
+    function owner() public view returns (address _owner) {
+        _owner = getLightmImplState()._owner;
     }
 
-    function setCollectionOwner(address target) external onlyOwner {
+    function setOwner(address target) external onlyOwner {
         _setCollectionOwner(target);
     }
 
