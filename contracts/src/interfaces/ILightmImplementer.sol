@@ -4,13 +4,16 @@ pragma solidity ^0.8.0;
 import "./ILightmEquippable.sol";
 
 interface ILightmImplementerEventsAndStruct {
-    event LightmCollectionOwnerSet(address newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 }
 
 interface ILightmImplementer is ILightmImplementerEventsAndStruct {
     function owner() external view returns (address owner);
 
-    function setOwner(address target) external;
+    function transferOwnership(address target) external;
 
     function setCollectionMetadata(string calldata newMetadata) external;
 

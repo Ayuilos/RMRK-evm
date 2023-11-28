@@ -42,7 +42,7 @@ contract LightmImpl is
         _owner = getLightmImplState()._owner;
     }
 
-    function setOwner(address target) external onlyOwner {
+    function transferOwnership(address target) external onlyOwner {
         _setCollectionOwner(target);
     }
 

@@ -18,9 +18,10 @@ abstract contract LightmImplInternal is ILightmImplementerEventsAndStruct {
     }
 
     function _setCollectionOwner(address target) internal {
+        address oldOwner = getLightmImplState()._owner;
         getLightmImplState()._owner = target;
 
-        emit LightmCollectionOwnerSet(target);
+        emit OwnershipTransferred(oldOwner, target);
     }
 
     modifier onlyOwner() {
