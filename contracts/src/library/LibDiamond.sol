@@ -47,7 +47,7 @@ library LibDiamond {
         }
     }
 
-    event OwnershipTransferred(
+    event DiamondOwnershipTransferred(
         address indexed previousOwner,
         address indexed newOwner
     );
@@ -56,7 +56,7 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage();
         address previousOwner = ds.contractOwner;
         ds.contractOwner = _newOwner;
-        emit OwnershipTransferred(previousOwner, _newOwner);
+        emit DiamondOwnershipTransferred(previousOwner, _newOwner);
     }
 
     function contractOwner() internal view returns (address contractOwner_) {
